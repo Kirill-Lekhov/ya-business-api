@@ -845,7 +845,12 @@ files = [
 idna = ">=2.0"
 multidict = ">=4.0"
 
+[extras]
+all = ["aiohttp", "requests"]
+async = ["aiohttp"]
+sync = ["requests"]
+
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8.1"
-content-hash = "5ccd6b4c6834b030ae559ef20cad08fedcba329ba3ca3a3af08148604885b0f9"
+content-hash = "c01cf911d390667c285702c9e7f91b5113b9840a2f5bd67a2b6b424c2af741d9"
