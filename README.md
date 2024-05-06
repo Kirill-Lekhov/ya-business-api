@@ -1,4 +1,4 @@
-# Yandex business (sprav) API client
+# Yandex business (sprav) API client [![codecov](https://codecov.io/gh/Kirill-Lekhov/ya-business-api/graph/badge.svg?token=9Q77PG68W1)](https://codecov.io/gh/Kirill-Lekhov/ya-business-api)
 
 ## Installation
 ```sh
