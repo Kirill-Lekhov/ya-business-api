@@ -1,7 +1,7 @@
 from ya_business_api.core.mixins.synchronous import SyncAPIMixin
 from ya_business_api.core.constants import Cookie
 from ya_business_api.reviews.base_api import BaseReviewsAPI
-from ya_business_api.reviews.constants import INVALID_TOKEN_STATUSES, SUCCESS_ANSWER_RESPONSE
+from ya_business_api.reviews.constants import SUCCESS_ANSWER_RESPONSE
 from ya_business_api.reviews.dataclasses.reviews import ReviewsResponse
 from ya_business_api.reviews.dataclasses.requests import AnswerRequest, ReviewsRequest
 
@@ -20,7 +20,7 @@ class SyncReviewsAPI(SyncAPIMixin, BaseReviewsAPI):
 		request = request or ReviewsRequest()
 		response = self.session.get(url, params=request.as_query_params(), allow_redirects=False)
 		log.debug(f"REVIEWS[{response.status_code}] {response.elapsed.total_seconds()}s")
-		assert response.status_code == 200
+		self.check_response(response)
 
 		return ReviewsResponse.from_dict(response.json())
 
@@ -54,10 +54,6 @@ class SyncReviewsAPI(SyncAPIMixin, BaseReviewsAPI):
 			allow_redirects=False,
 		)
 		log.debug(f"ANSWER[{response.status_code}] {response.elapsed.total_seconds()}s")
-
-		if response.status_code in INVALID_TOKEN_STATUSES:
-			raise ValueError("Invalid token")
-
-		assert response.status_code == 200
+		self.check_response(response)
 
 		return response.text == SUCCESS_ANSWER_RESPONSE

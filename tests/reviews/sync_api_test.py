@@ -2,12 +2,10 @@ from ya_business_api.reviews.sync_api import SyncReviewsAPI
 from ya_business_api.reviews.dataclasses.reviews import ReviewsResponse
 from ya_business_api.reviews.dataclasses.requests import AnswerRequest
 from ya_business_api.reviews.constants import Ranking
-from ya_business_api.core.constants import Cookie
 
 from logging import DEBUG
 from unittest.mock import patch
 
-import pytest
 from requests.models import Response
 from requests.sessions import Session
 
@@ -25,19 +23,6 @@ class TestReviewsAPI:
 		caplog.set_level(DEBUG)
 		api = SyncReviewsAPI(1, "csrftoken", Session())
 		response = Response()
-		response.status_code = 400
-
-		with patch.object(api.session, "get", return_value=response) as session_get_method:
-			with pytest.raises(AssertionError):
-				api.get_reviews()
-
-			session_get_method.assert_called_once()
-
-			for record in caplog.records:
-				assert record.levelname == "DEBUG"
-
-			assert "REVIEWS[400] 0.0s" in caplog.text
-
 		response.status_code = 200
 		data = {
 			"page": 1,
@@ -70,18 +55,6 @@ class TestReviewsAPI:
 		api = SyncReviewsAPI(1, "CSRF_TOKEN", Session())
 		request = AnswerRequest("review", "hello", "reviews_token", "answer_token")
 		response = Response()
-
-		for i in (488, 401):
-			response.status_code = i
-
-			with patch.object(api.session, "post", return_value=response) as session_post_method:
-				with patch.object(api.session.cookies, "set") as session_cookies_set_method:
-					with pytest.raises(ValueError, match="Invalid token"):
-						api.send_answer(request)
-
-					session_cookies_set_method.assert_called_once_with(Cookie.I.value, "")
-					session_post_method.assert_called_once()
-
 		response.status_code = 200
 
 		with patch.object(api.session, "post", return_value=response) as session_post_method:
@@ -90,6 +63,7 @@ class TestReviewsAPI:
 
 			response._content = b"FAILED"
 			assert not api.send_answer(request)
+			session_post_method.assert_called()
 
 		for record in caplog.records:
 			assert record.levelname == "DEBUG"

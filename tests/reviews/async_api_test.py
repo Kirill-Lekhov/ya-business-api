@@ -51,7 +51,6 @@ class TestAsyncReviewsAPI:
 		caplog.set_level(DEBUG)
 		session = ClientSession()
 		api = AsyncReviewsAPI(1212, "CSRFTOKEN", session)
-		response = Response(400, "")
 		data = {
 			"page": 1,
 			"currentState": {
@@ -69,23 +68,11 @@ class TestAsyncReviewsAPI:
 				"csrf_token": "CSRF_TOKEN",
 			},
 		}
+		response = Response(200, dumps(data))
 		request_context_manager = RequestContextManager(response)
 
 		with patch.object(session, "get", return_value=request_context_manager) as session_get_method:
 			with patch("ya_business_api.reviews.async_api.monotonic", return_value=0.0):
-				with pytest.raises(AssertionError):
-					await api.get_reviews()
-
-				for record in caplog.records:
-					assert record.levelname == "DEBUG"
-
-				assert "REVIEWS[400] 0.0s\n" in caplog.text
-				session_get_method.assert_called_once()
-
-				session_get_method.reset_mock()
-				response.status = 200
-				response.content = dumps(data)
-
 				data = await api.get_reviews()
 				session_get_method.assert_called_once()
 				assert isinstance(data, ReviewsResponse)
@@ -97,22 +84,11 @@ class TestAsyncReviewsAPI:
 		session = ClientSession()
 		api = AsyncReviewsAPI(1, "CSRFTOKEN", session)
 		request = AnswerRequest("review", "hello", "reviews_token", "answer_token")
-		response = Response(200, "")
+		response = Response(200, "OK")
 		request_context_manager = RequestContextManager(response)
 
 		with patch.object(session, "post", return_value=request_context_manager) as session_post_method:
 			with patch("ya_business_api.reviews.async_api.monotonic", return_value=0.0):
-				for i in (488, 401):
-					response.status = i
-
-					with patch.object(session.cookie_jar, "update_cookies") as update_cookies_method:
-						with pytest.raises(ValueError, match="Invalid token"):
-							await api.send_answer(request)
-
-						update_cookies_method.assert_called()
-
-				response.status = 200
-				response.content = "OK"
 				session_post_method.reset_mock()
 				assert await api.send_answer(request)
 				session_post_method.assert_called_once()

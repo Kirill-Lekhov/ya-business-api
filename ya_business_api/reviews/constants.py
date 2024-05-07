@@ -1,8 +1,7 @@
 from enum import Enum
-from typing import Final, Set
+from typing import Final
 
 
-INVALID_TOKEN_STATUSES: Final[Set[int]] = {488, 401}
 SUCCESS_ANSWER_RESPONSE: Final[str] = "OK"
 
 
