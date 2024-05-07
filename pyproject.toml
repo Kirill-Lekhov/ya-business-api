@@ -2,7 +2,7 @@
 name = "ya-business-api"
 version = "0.0.1"
 description = "Yandex business API client"
-authors = ["Kirill_Lekhov <k.lekhov@mail.ru>"]
+authors = ["Kirill_Lekhov <kirill.lekhov@mail.ru>"]
 license = "MIT"
 readme = "README.md"
 packages = [{include = "ya_business_api"}]
