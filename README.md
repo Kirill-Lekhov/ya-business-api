@@ -61,7 +61,7 @@ getData()
 ```
 
 ### ⚠️WARNING⚠️
-The `CSRFToken` and `PermanentId` belong to certain companies and cannot be used to respond to reviews from another company.
+The `PermanentId` belong to certain companies and cannot be used to respond to reviews from another company.
 
 ## Reviews
 ### Reviews fetching
