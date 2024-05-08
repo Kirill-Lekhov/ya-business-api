@@ -1,6 +1,6 @@
 from ya_business_api.reviews.sync_api import SyncReviewsAPI
 from ya_business_api.reviews.dataclasses.reviews import ReviewsResponse
-from ya_business_api.reviews.dataclasses.requests import AnswerRequest
+from ya_business_api.reviews.dataclasses.requests import AnswerRequest, ReviewsRequest
 from ya_business_api.reviews.constants import Ranking
 
 from logging import DEBUG
@@ -13,15 +13,14 @@ from requests.sessions import Session
 class TestReviewsAPI:
 	def test___init__(self):
 		session = Session()
-		api = SyncReviewsAPI(1, "csrftoken", session)
+		api = SyncReviewsAPI("csrftoken", session)
 
-		assert api.permanent_id == 1
 		assert api.csrf_token == "csrftoken"
 		assert api.session is session
 
 	def test_get_reviews(self, caplog):
 		caplog.set_level(DEBUG)
-		api = SyncReviewsAPI(1, "csrftoken", Session())
+		api = SyncReviewsAPI("csrftoken", Session())
 		response = Response()
 		response.status_code = 200
 		data = {
@@ -44,7 +43,7 @@ class TestReviewsAPI:
 
 		with patch.object(response, "json", return_value=data) as response_json_method:
 			with patch.object(api.session, "get", return_value=response) as session_get_method:
-				response = api.get_reviews()
+				response = api.get_reviews(ReviewsRequest(1))
 				session_get_method.assert_called_once()
 				response_json_method.assert_called_once()
 
@@ -52,7 +51,7 @@ class TestReviewsAPI:
 
 	def test_send_answer(self, caplog):
 		caplog.set_level(DEBUG)
-		api = SyncReviewsAPI(1, "CSRF_TOKEN", Session())
+		api = SyncReviewsAPI("CSRF_TOKEN", Session())
 		request = AnswerRequest("review", "hello", "reviews_token", "answer_token")
 		response = Response()
 		response.status_code = 200

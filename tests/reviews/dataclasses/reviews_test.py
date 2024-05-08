@@ -123,18 +123,6 @@ class TestReview:
 
 		assert isinstance(review.owner_comment, OwnerComment)
 
-	def test__validate_attrs(self):
-		review = Review.from_dict(get_review_data())
-		review.owner_comment = "Wrong type"		# type: ignore - For testing purposes
-
-		with pytest.raises(AssertionError, match="The owner comment must be None or OwnerComment instance"):
-			review._validate_attrs()
-
-	def test__get_annotations_to_validate(self):
-		review = Review.from_dict(get_review_data())
-		attrs = {i[0] for i in review._get_annotations_to_validate()}
-		assert 'owner_comment' not in attrs
-
 	def test___repr__(self):
 		review = Review.from_dict(get_review_data())
 		assert review.__repr__() == "<Review: review id>"

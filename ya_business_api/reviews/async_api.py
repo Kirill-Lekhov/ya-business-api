@@ -7,18 +7,16 @@ from ya_business_api.reviews.dataclasses.requests import AnswerRequest, ReviewsR
 
 from time import monotonic
 from logging import getLogger; log = getLogger(__name__)
-from typing import Optional
 
 from aiohttp.client import ClientSession
 
 
 class AsyncReviewsAPI(AsyncAPIMixin, BaseReviewsAPI):
-	def __init__(self, permanent_id: int, csrf_token: str, session: ClientSession) -> None:
-		super().__init__(session, permanent_id, csrf_token)
+	def __init__(self, csrf_token: str, session: ClientSession) -> None:
+		super().__init__(session, csrf_token)
 
-	async def get_reviews(self, request: Optional[ReviewsRequest] = None) -> ReviewsResponse:
-		url = self.router.reviews()
-		request = request or ReviewsRequest()
+	async def get_reviews(self, request: ReviewsRequest) -> ReviewsResponse:
+		url = self.router.reviews(request.permanent_id)
 		time_start = monotonic()
 
 		async with self.session.get(url, params=request.as_query_params(), allow_redirects=False) as response:

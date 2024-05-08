@@ -1,4 +1,4 @@
-from ya_business_api.core.dataclasses import ValidatedMixin
+from ya_business_api.core.dataclasses import ValidatedMixin, DictMixin
 
 from dataclasses import dataclass
 from typing import List
@@ -8,12 +8,12 @@ import pytest
 
 
 @dataclass
-class EmptyDataclass(ValidatedMixin):
+class EmptyDataclass(ValidatedMixin, DictMixin):
 	pass
 
 
 @dataclass
-class FilledDataclass(ValidatedMixin):
+class FilledDataclass(ValidatedMixin, DictMixin):
 	a: str
 	b: int
 	c: List[str]
@@ -44,3 +44,18 @@ class TestValidatedMixin:
 			('b', int),
 			('c', List[str]),
 		}
+
+
+class TestDictMixin:
+	def test_from_dict(self):
+		dataclass_instance = EmptyDataclass.from_dict({})
+		assert isinstance(dataclass_instance, EmptyDataclass)
+
+		with pytest.raises(TypeError):
+			FilledDataclass.from_dict({})
+
+		dataclass_instance = FilledDataclass.from_dict({"a": "1", "b": 2, "c": ["3"]})
+		assert isinstance(dataclass_instance, FilledDataclass)
+		assert dataclass_instance.a == "1"
+		assert dataclass_instance.b == 2
+		assert dataclass_instance.c == ["3"]

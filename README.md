@@ -21,7 +21,6 @@ from ya_business_api.async_api import AsyncAPI		# Async mode
 
 def main() -> None:
 	api = SyncAPI.build(
-		permanent_id=...,
 		csrf_token=...,
 		session_id=...,
 		session_id2=...,
@@ -32,7 +31,6 @@ def main() -> None:
 
 async def main() -> None:
 	api = await AsyncAPI.build(
-		permanent_id=...,
 		csrf_token=...,
 		session_id=...,
 		session_id2=...,
@@ -42,7 +40,6 @@ async def main() -> None:
 
 	await api.session.close()
 ```
-
 
 ### Where can I get the data for the client?
 On the reviews page (https://yandex.ru/sprav/.../edit/reviews), open the developer console (usually `F12`) from the first request, copy values of cookies (`Session_id` and `sessionid2`).
@@ -63,22 +60,29 @@ getData()
 */
 ```
 
+### ⚠️WARNING⚠️
+The `CSRFToken` and `PermanentId` belong to certain companies and cannot be used to respond to reviews from another company.
+
 ## Reviews
 ### Reviews fetching
 ```python
 # Sync mode
 from ya_business_api.sync_api import SyncAPI
+from ya_business_api.reviews.dataclasses.requests import ReviewsRequest
 
 
 api = SyncAPI.build(**kwargs)
-response = api.reviews.get_reviews()
+request = ReviewsRequest(permanent_id=<permanent_id>)
+response = api.reviews.get_reviews(request)
 
 # Async mode
 from ya_business_api.async_api import AsyncAPI
+from ya_business_api.reviews.dataclasses.requests import ReviewsRequest
 
 
 api = await AsyncAPI.build(**kwargs)
-response = await api.reviews.get_reviews()
+request = ReviewsRequest(permanent_id=<permanent_id>)
+response = await api.reviews.get_reviews(request)
 await api.session.close()
 ```
 
@@ -90,10 +94,14 @@ from ya_business_api.reviews.constants import Ranking
 
 
 api = SyncAPI.build(**kwargs)
-request = ReviewsRequest(ranking=Ranking.BY_RATING_DESC, unread=True, page=5)
+request = ReviewsRequest(
+	permanent_id=<permanent_id>,
+	ranking=Ranking.BY_RATING_DESC,
+	unread=True,
+	page=5,
+)
 response = api.reviews.get_reviews(request)
 ```
-
 
 ### Answering to reviews
 ```python
@@ -129,6 +137,36 @@ response = await api.reviews.send_answer(request)
 await api.session.close()
 ```
 
+## Companies
+### Receiving companies
+```python
+# Sync mode
+from ya_business_api.sync_api import SyncAPI
+
+
+api = SyncAPI.build(**kwargs)
+response = api.companies.get_companies()
+
+# Async mode
+from ya_business_api.async_mode
+
+
+api = await AsyncAPI.build(**kwargs)
+response = await api.companies.get_companies()
+
+await api.session.close()
+```
+
+#### Filtering and pagination
+```python
+from ya_business_api.sync_api import SyncAPI
+from ya_business_api.companies.dataclasses.requests import CompaniesRequest
+
+
+api = SyncAPI.build(**kwargs)
+request = CompaniesRequest(filter="My Company", page=5)
+response = api.companies.get_companies(request)
+```
 
 ## Shortcuts
 ### Answers deleting

@@ -1,4 +1,4 @@
-from ya_business_api.core.dataclasses import ValidatedMixin
+from ya_business_api.core.dataclasses import ValidatedMixin, DictMixin
 from ya_business_api.reviews.constants import Ranking
 
 from typing import TypeVar, List, Optional
@@ -9,7 +9,7 @@ T = TypeVar('T')
 
 
 @dataclass
-class Author(ValidatedMixin):
+class Author(ValidatedMixin, DictMixin):
 	__slots__ = 'privacy', 'user', 'uid', 'avatar'
 
 	privacy: str
@@ -17,13 +17,9 @@ class Author(ValidatedMixin):
 	uid: int
 	avatar: str
 
-	@classmethod
-	def from_dict(cls, d: dict) -> "Author":
-		return cls(**d)
-
 
 @dataclass
-class InitChatData(ValidatedMixin):
+class InitChatData(ValidatedMixin, DictMixin):
 	__slots__ = 'entityId', 'supplierServiceSlug', 'name', 'description', 'entityUrl', 'entityImage', 'version'
 
 	entityId: str
@@ -34,23 +30,17 @@ class InitChatData(ValidatedMixin):
 	entityImage: str
 	version: int
 
-	@classmethod
-	def from_dict(cls, d: dict) -> "InitChatData":
-		return cls(**d)
-
 
 @dataclass
-class OwnerComment(ValidatedMixin):
+class OwnerComment(ValidatedMixin, DictMixin):
+	__slots__ = 'time_created', 'text'
+
 	time_created: int
 	text: str
 
-	@classmethod
-	def from_dict(cls, d: dict) -> "OwnerComment":
-		return cls(**d)
-
 
 @dataclass
-class Review(ValidatedMixin):
+class Review(ValidatedMixin, DictMixin):
 	__slots__ = (
 		'id', 'lang', 'author', 'time_created', 'snippet', 'full_text', 'rating', 'cmnt_entity_id',
 		'comments_count', 'cmnt_official_token', 'init_chat_data', 'init_chat_token', 'public_rating',
@@ -83,38 +73,25 @@ class Review(ValidatedMixin):
 		else:
 			d['owner_comment'] = None
 
-		return cls(**d)
-
-	def _validate_attrs(self) -> None:
-		super()._validate_attrs()
-		assert (
-			self.owner_comment is None or isinstance(self.owner_comment, OwnerComment)
-		), "The owner comment must be None or OwnerComment instance"
-
-	def _get_annotations_to_validate(self):
-		attrs_to_skip = {'owner_comment'}
-
-		for i in self.__annotations__.items():
-			if i[0] not in attrs_to_skip:
-				yield i
+		return super().from_dict(d)
 
 	def __repr__(self) -> str:
 		return f"<{self.__class__.__qualname__}: {self.id}>"
 
 
 @dataclass
-class Pager(ValidatedMixin):
+class Pager(ValidatedMixin, DictMixin):
+	__slots__ = 'limit', 'offset', 'total'
+
 	limit: int
 	offset: int
 	total: int
 
-	@classmethod
-	def from_dict(cls, d: dict) -> "Pager":
-		return cls(**d)
-
 
 @dataclass
-class Reviews(ValidatedMixin):
+class Reviews(ValidatedMixin, DictMixin):
+	__slots__ = 'pager', 'items', 'csrf_token'
+
 	pager: Pager
 	items: List[Review]
 	csrf_token: str
@@ -129,38 +106,45 @@ class Reviews(ValidatedMixin):
 	def from_dict(cls, d: dict) -> "Reviews":
 		d['pager'] = Pager.from_dict(d.get('pager', {}))
 		d['items'] = [Review.from_dict(i) for i in d.get('items', [])]
-		return cls(**d)
+		return super().from_dict(d)
 
 
 @dataclass
-class Filters(ValidatedMixin):
-	ranking: Ranking
-	unread: Optional[bool] = None
+class Filters(ValidatedMixin, DictMixin):
+	__slots__ = 'ranking', 'unread'
 
-	def __post_init__(self) -> None:
-		assert isinstance(self.ranking, Ranking)
-		assert self.unread is None or isinstance(self.unread, bool)
+	ranking: Ranking
+	unread: Optional[bool]
+
+	def __init__(self, ranking: Ranking, unread: Optional[bool] = None):
+		self.ranking = ranking
+		self.unread = unread
+		self.__post_init__()
 
 	@classmethod
 	def from_dict(cls, d: dict) -> "Filters":
 		d['unread'] = True if d.get('unread') == 'True' else False
 		d['ranking'] = Ranking(d.get('ranking'))
-		return cls(**d)
+		return super().from_dict(d)
 
 
 @dataclass
-class CurrentState(ValidatedMixin):
+class CurrentState(ValidatedMixin, DictMixin):
+	__slots__ = 'filters'
+
 	filters: Filters
 
 	@classmethod
 	def from_dict(cls, d: dict) -> "CurrentState":
 		d['filters'] = Filters.from_dict(d.get('filters', {}))
 
-		return cls(**d)
+		return super().from_dict(d)
 
 
 @dataclass
-class ReviewsResponse(ValidatedMixin):
+class ReviewsResponse(ValidatedMixin, DictMixin):
+	__slots__ = 'page', 'currentState', 'list'
+
 	page: int
 	currentState: CurrentState
 	list: Reviews
@@ -170,4 +154,4 @@ class ReviewsResponse(ValidatedMixin):
 		d['currentState'] = CurrentState.from_dict(d.get('currentState', {}))
 		d['list'] = Reviews.from_dict(d.get('list', {}))
 
-		return cls(**d)
+		return super().from_dict(d)

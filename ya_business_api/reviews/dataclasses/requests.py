@@ -14,6 +14,7 @@ class AnswerRequest(ValidatedMixin):
 
 @dataclass
 class ReviewsRequest(ValidatedMixin):
+	permanent_id: int
 	ranking: Ranking = Ranking.BY_TIME
 	unread: bool = False
 	page: int = 1
