@@ -1,9 +1,10 @@
 from ya_business_api.core.mixins.synchronous import SyncAPIMixin
 from ya_business_api.core.exceptions import AuthenticationError, CSRFTokenError
-from ya_business_api.core.constants import INVALID_TOKEN_STATUSES
+from ya_business_api.core.constants import INVALID_TOKEN_STATUSES, Cookie
 
 import pytest
 from requests.models import Response
+from requests.sessions import Session
 
 
 class Next:
@@ -31,3 +32,13 @@ class TestSyncAPIMixin:
 
 		response.status_code = 200
 		SyncAPIMixin.check_response(response)
+
+	def test_set_i_cookie(self):
+		session = Session()
+		mixin = SyncAPIMixin(session)
+		mixin.set_i_cookie()
+		assert session.cookies.get_dict().get(Cookie.I.value) == ""
+
+		session.cookies.set(Cookie.I.value, "I COOKIE VALUE")
+		mixin.set_i_cookie()
+		assert session.cookies.get_dict().get(Cookie.I.value) == "I COOKIE VALUE"

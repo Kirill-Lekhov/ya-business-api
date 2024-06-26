@@ -1,4 +1,4 @@
-from ya_business_api.core.constants import INVALID_TOKEN_STATUSES, PASSPORT_URL
+from ya_business_api.core.constants import INVALID_TOKEN_STATUSES, PASSPORT_URL, Cookie
 from ya_business_api.core.exceptions import CSRFTokenError, AuthenticationError
 
 from requests.sessions import Session
@@ -22,3 +22,10 @@ class SyncAPIMixin:
 			raise CSRFTokenError()
 
 		assert response.status_code == 200
+
+	def set_i_cookie(self) -> None:
+		"""
+		Sets a stub value to the "i" cookie if it not specified.
+		"""
+		if Cookie.I.value not in self.session.cookies.keys():
+			self.session.cookies.set(Cookie.I.value, "")

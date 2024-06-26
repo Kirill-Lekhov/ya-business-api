@@ -1,5 +1,4 @@
 from ya_business_api.core.mixins.asynchronous import AsyncAPIMixin
-from ya_business_api.core.constants import Cookie
 from ya_business_api.reviews.base_api import BaseReviewsAPI
 from ya_business_api.reviews.constants import SUCCESS_ANSWER_RESPONSE
 from ya_business_api.reviews.dataclasses.reviews import ReviewsResponse
@@ -37,11 +36,7 @@ class AsyncReviewsAPI(AsyncAPIMixin, BaseReviewsAPI):
 
 	async def send_answer(self, request: AnswerRequest) -> bool:
 		url = self.router.answer()
-		cookie_names = {cookie.key for cookie in self.session.cookie_jar}
-
-		if Cookie.I.value not in cookie_names:
-			self.session.cookie_jar.update_cookies({Cookie.I.value: ""})
-
+		self.set_i_cookie()
 		data = {
 			"reviewId": request.review_id,
 			"text": request.text,

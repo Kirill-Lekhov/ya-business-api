@@ -21,9 +21,9 @@ from ya_business_api.async_api import AsyncAPI		# Async mode
 
 def main() -> None:
 	api = SyncAPI.build(
-		csrf_token=...,
 		session_id=...,
 		session_id2=...,
+		csrf_token=...,		# Optional
 	)
 
 	# Do things here...
@@ -31,9 +31,9 @@ def main() -> None:
 
 async def main() -> None:
 	api = await AsyncAPI.build(
-		csrf_token=...,
 		session_id=...,
 		session_id2=...,
+		csrf_token=...,		# Optional
 	)
 
 	# Do things here...
@@ -61,7 +61,8 @@ getData()
 ```
 
 ### ⚠️WARNING⚠️
-The `PermanentId` belong to certain companies and cannot be used to respond to reviews from another company.
+1. The `PermanentId` belong to certain companies and cannot be used to respond to reviews from another company.
+2. The `CSRFToken` can be fetched automatically if it is not explicitly specified when calling the build method.
 
 ## Reviews
 ### Reviews fetching
@@ -188,6 +189,26 @@ from ya_business_api.sync_api import SyncAPI
 
 api = SyncAPI.build(**kwargs)
 response = api.companies.get_companies()
+```
+
+## Service
+### Receiving CSRF token
+```python
+# Sync mode
+from ya_business_api.sync_api import SyncAPI
+
+
+api = SyncAPI.build(**kwargs)
+csrf_token = api.service.get_csrf_token()
+
+# Async mode
+from ya_business_api.async_api import AsyncAPI
+
+
+api = await AsyncAPI.build(**kwargs)
+csrf_token = await api.service.get_csrf_token()
+
+await api.session.close()
 ```
 
 ## Shortcuts
