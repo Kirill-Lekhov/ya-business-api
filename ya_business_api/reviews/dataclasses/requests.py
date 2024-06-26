@@ -1,19 +1,16 @@
-from ya_business_api.core.dataclasses import ValidatedMixin
 from ya_business_api.reviews.constants import Ranking
 
-from dataclasses import dataclass
+from pydantic import BaseModel
 
 
-@dataclass
-class AnswerRequest(ValidatedMixin):
+class AnswerRequest(BaseModel):
 	review_id: str
 	text: str
 	reviews_csrf_token: str
 	answer_csrf_token: str
 
 
-@dataclass
-class ReviewsRequest(ValidatedMixin):
+class ReviewsRequest(BaseModel):
 	permanent_id: int
 	ranking: Ranking = Ranking.BY_TIME
 	unread: bool = False

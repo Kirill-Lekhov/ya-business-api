@@ -1,9 +1,9 @@
-from dataclasses import dataclass
 from typing import Optional
 
+from pydantic import BaseModel
 
-@dataclass
-class CompaniesRequest:
+
+class CompaniesRequest(BaseModel):
 	filter: Optional[str] = None
 	page: Optional[int] = None
 

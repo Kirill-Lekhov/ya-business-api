@@ -4,8 +4,6 @@ from ya_business_api.companies.dataclasses.companies import (
 	CompaniesResponse,
 )
 
-import pytest
-
 
 def make_localized_value() -> dict:
 	return {'locale': 'ru', 'value': 'Российская Федерация'}
@@ -56,6 +54,7 @@ def make_address() -> dict:
 		"region_code": 'RU',
 		"translations": [make_address_translation()],
 		"translocal": "Адрес",
+		"is_manual_one_line": False,
 	}
 
 
@@ -201,31 +200,24 @@ def make_companies_response() -> dict:
 
 
 class TestLocalizedValue:
-	def test_from_dict(self):
-		localized_value = LocalizedValue.from_dict(make_localized_value())
+	def test_validation(self):
+		localized_value = LocalizedValue(**make_localized_value())
 		assert isinstance(localized_value, LocalizedValue)
 		assert localized_value.locale == "ru"
 		assert localized_value.value == "Российская Федерация"
 
 
 class TestPosition:
-	def test___post_init__(self):
-		with pytest.raises(AssertionError):
-			Position(coordinates=(), type="Point")		# type: ignore - For testing purposes
-
-		with pytest.raises(AssertionError):
-			Position(coordinates=(0.1, "0.2"), type="Point")		# type: ignore - For testing purposes
-
-	def test_from_dict(self):
-		position = Position.from_dict(make_position())
+	def test_validation(self):
+		position = Position(**make_position())
 		assert isinstance(position, Position)
 		assert position.coordinates == (0.15, 0.11)
 		assert position.type == "Point"
 
 
 class TestAddressComponent:
-	def test_from_dict(self):
-		component = AddressComponent.from_dict(make_address_component())
+	def test_validation(self):
+		component = AddressComponent(**make_address_component())
 		assert isinstance(component, AddressComponent)
 		assert component.kind == 'country'
 		assert isinstance(component.name, LocalizedValue)
@@ -234,8 +226,8 @@ class TestAddressComponent:
 
 
 class TestAddressEntrance:
-	def test_from_dict(self):
-		entrance = AddressEntrance.from_dict(make_address_entrance())
+	def test_validation(self):
+		entrance = AddressEntrance(**make_address_entrance())
 
 		assert isinstance(entrance, AddressEntrance)
 		assert entrance.normal_azimuth == 8.0123456789
@@ -246,8 +238,8 @@ class TestAddressEntrance:
 
 
 class TestAddressTranslation:
-	def test_from_dict(self):
-		translation = AddressTranslation.from_dict(make_address_translation())
+	def test_validation(self):
+		translation = AddressTranslation(**make_address_translation())
 		assert isinstance(translation, AddressTranslation)
 		assert isinstance(translation.components, list)
 		assert len(translation.components) == 2
@@ -259,35 +251,8 @@ class TestAddressTranslation:
 
 
 class TestAddress:
-	def test___post_init__(self):
-		raw_data = make_address()
-		raw_data['formatted'] = LocalizedValue.from_dict(raw_data['formatted'])
-		raw_data['pos'] = Position.from_dict(raw_data['pos'])
-
-		with pytest.raises(AssertionError, match="Bounding box must be list of Number tuples"):
-			Address(**raw_data)
-
-		raw_data['bounding_box'] = list(map(tuple, raw_data['bounding_box']))
-		with pytest.raises(AssertionError, match="Each component must be of AddressComponent type"):
-			Address(**raw_data)
-
-		raw_data['components'] = list(map(lambda x: AddressComponent.from_dict(x), raw_data['components']))
-		with pytest.raises(AssertionError, match="Each entrance must be of AddressEntrance type"):
-			Address(**raw_data)
-
-		raw_data['entrances'] = list(map(lambda x: AddressEntrance.from_dict(x), raw_data['entrances']))
-		with pytest.raises(AssertionError, match="Each info must be of LocalizedValue type"):
-			Address(**raw_data)
-
-		raw_data['infos'] = list(map(lambda x: LocalizedValue.from_dict(x), raw_data['infos']))
-		with pytest.raises(AssertionError, match="Each translation must be of AddressTranslation type"):
-			Address(**raw_data)
-
-		raw_data['translations'] = list(map(lambda x: AddressTranslation.from_dict(x), raw_data['translations']))
-		Address(**raw_data)
-
-	def test_from_dict(self):
-		address = Address.from_dict(make_address())
+	def test_validation(self):
+		address = Address(**make_address())
 		assert address.address_id == 117755
 		assert len(address.bounding_box) == 2
 		assert len(address.components) == 2
@@ -305,8 +270,8 @@ class TestAddress:
 
 
 class TestWorkInterval:
-	def test_from_dict(self):
-		work_interval = WorkInterval.from_dict(make_work_interval())
+	def test_validation(self):
+		work_interval = WorkInterval(**make_work_interval())
 		assert isinstance(work_interval, WorkInterval)
 		assert work_interval.day == "weekdays"
 		assert work_interval.time_minutes_begin == 0
@@ -314,40 +279,40 @@ class TestWorkInterval:
 
 
 class TestGeoCampaign:
-	def test_from_dict(self):
-		geo_campaign = GeoCampaign.from_dict(make_geo_campaign())
+	def test_validation(self):
+		geo_campaign = GeoCampaign(**make_geo_campaign())
 		assert isinstance(geo_campaign, GeoCampaign)
 		assert geo_campaign.hasActive
 		assert not geo_campaign.hasDraft
 
 
 class TestName:
-	def test_from_dict(self):
-		name = Name.from_dict(make_name())
+	def test_validation(self):
+		name = Name(**make_name())
 		assert isinstance(name, Name)
 		assert name.type == 'main'
 		assert isinstance(name.value, LocalizedValue)
 
 
 class TestPanoramaDirection:
-	def test_from_dict(self):
-		direction = PanoramaDirection.from_dict(make_panorama_direction())
+	def test_validation(self):
+		direction = PanoramaDirection(**make_panorama_direction())
 		assert isinstance(direction, PanoramaDirection)
 		assert direction.bearing == 11.44
 		assert direction.pitch == 44
 
 
 class TestPanoramaSpan:
-	def test_from_dict(self):
-		span = PanoramaSpan.from_dict(make_panorama_span())
+	def test_validation(self):
+		span = PanoramaSpan(**make_panorama_span())
 		assert isinstance(span, PanoramaSpan)
 		assert span.horizontal == 12
 		assert span.vertical == 0.12
 
 
 class TestPanorama:
-	def test_from_dict(self):
-		panorama = Panorama.from_dict(make_panorama())
+	def test_validation(self):
+		panorama = Panorama(**make_panorama())
 		assert isinstance(panorama, Panorama)
 		assert isinstance(panorama.direction, PanoramaDirection)
 		assert panorama.id == "identifier"
@@ -357,8 +322,8 @@ class TestPanorama:
 
 
 class TestPhone:
-	def test_from_dict(self):
-		phone = Phone.from_dict(make_phone())
+	def test_validation(self):
+		phone = Phone(**make_phone())
 		assert isinstance(phone, Phone)
 		assert phone.country_code == "7"
 		assert phone.formatted == "+7 (8412) 38-58-78"
@@ -369,8 +334,8 @@ class TestPhone:
 
 
 class TestRubric:
-	def test_from_dict(self):
-		rubric = Rubric.from_dict(make_rubric())
+	def test_validation(self):
+		rubric = Rubric(**make_rubric())
 		assert isinstance(rubric, Rubric)
 		assert rubric.features == []
 		assert rubric.id == 123
@@ -379,8 +344,8 @@ class TestRubric:
 
 
 class TestServiceProfile:
-	def test_from_dict(self):
-		service_profile = ServiceProfile.from_dict(make_service_profile())
+	def test_validation(self):
+		service_profile = ServiceProfile(**make_service_profile())
 		assert isinstance(service_profile, ServiceProfile)
 		assert service_profile.external_path == "/maps/org/67123879"
 		assert service_profile.published
@@ -388,8 +353,8 @@ class TestServiceProfile:
 
 
 class TestCompanyURL:
-	def test_from_dict(self):
-		company_url = CompanyURL.from_dict(make_company_url())
+	def test_validation(self):
+		company_url = CompanyURL(**make_company_url())
 		assert isinstance(company_url, CompanyURL)
 		assert not company_url.hide
 		assert company_url.type == "main"
@@ -400,18 +365,14 @@ class TestCompanyURL:
 		url_data = make_company_url()
 		url_data['social_login'] = "ya"
 		url_data['social_network'] = "vkontakte"
-		company_url = CompanyURL.from_dict(url_data)
+		company_url = CompanyURL(**url_data)
 		assert company_url.social_login == "ya"
 		assert company_url.social_network == "vkontakte"
 
 
 class TestCompanyLogo:
-	def test___post_init__(self):
-		with pytest.raises(AssertionError, match="All tags must be of string type"):
-			CompanyLogo(id="id", tags=["tag1", 2], time_published=0, url_template="")		# type: ignore
-
-	def test_from_dict(self):
-		company_logo = CompanyLogo.from_dict(make_company_logo())
+	def test_validation(self):
+		company_logo = CompanyLogo(**make_company_logo())
 		assert isinstance(company_logo, CompanyLogo)
 		assert company_logo.id == "identifier"
 		assert company_logo.tags == ["tag1", "tag2"]
@@ -420,52 +381,8 @@ class TestCompanyLogo:
 
 
 class TestCompany:
-	def test___post_init__(self):
-		data = make_company()
-		data['address'] = Address.from_dict(data['address'])
-		data['geoCampaign'] = GeoCampaign.from_dict(data['geoCampaign'])
-		data['panorama'] = Panorama.from_dict(data['panorama'])
-		data['emails'] = ['email1@example.com', 1]
-
-		with pytest.raises(AssertionError, match="All base work intervals must be of WorkInterval type"):
-			Company(**data)
-
-		data['base_work_intervals'] = [WorkInterval.from_dict(i) for i in data['base_work_intervals']]
-		with pytest.raises(AssertionError, match="All emails must be of str type"):
-			Company(**data)
-
-		data['emails'] = ['email1@example.com', 'email2@example.com']
-		with pytest.raises(AssertionError, match="All names must be of Name type"):
-			Company(**data)
-
-		data['names'] = [Name.from_dict(i) for i in data['names']]
-		with pytest.raises(AssertionError, match="All phones must be of Phone type"):
-			Company(**data)
-
-		data['phones'] = [Phone.from_dict(i) for i in data['phones']]
-		with pytest.raises(AssertionError, match="All service profiles must be of ServiceProfile type"):
-			Company(**data)
-
-		data['service_profiles'] = [ServiceProfile.from_dict(i) for i in data['service_profiles']]
-		with pytest.raises(AssertionError, match="All urls must be of CompanyURL type"):
-			Company(**data)
-
-		data['urls'] = [CompanyURL.from_dict(i) for i in data['urls']]
-		with pytest.raises(AssertionError, match="All work intervals must be of WorkInterval type"):
-			Company(**data)
-
-		data['work_intervals'] = [WorkInterval.from_dict(i) for i in data['work_intervals']]
-		with pytest.raises(AssertionError):
-			Company(**data)
-
-		for rubric in data['rubrics']:
-			for label, body in rubric.items():
-				rubric[label] = Rubric.from_dict(body)
-
-		Company(**data)
-
-	def test_from_dict(self):
-		company = Company.from_dict(make_company())
+	def test_validation(self):
+		company = Company(**make_company())
 		assert isinstance(company, Company)
 		assert isinstance(company.address, Address)
 		assert len(company.base_work_intervals) == 2
@@ -507,22 +424,13 @@ class TestCompany:
 
 		data = make_company()
 		data['logo'] = make_company_logo()
-		company = Company.from_dict(data)
+		company = Company(**data)
 		assert isinstance(company.logo, CompanyLogo)
 
 
 class TestCompaniesResponse:
-	def test___post_init__(self):
-		data = make_companies_response()
-
-		with pytest.raises(AssertionError):
-			CompaniesResponse(**data)
-
-		data['listCompanies'] = [Company.from_dict(i) for i in data['listCompanies']]
-		CompaniesResponse(**data)
-
-	def test_from_dict(self):
-		response = CompaniesResponse.from_dict(make_companies_response())
+	def test_validation(self):
+		response = CompaniesResponse(**make_companies_response())
 		assert response.limit == 10
 		assert len(response.listCompanies) == 2
 		assert response.page == 1

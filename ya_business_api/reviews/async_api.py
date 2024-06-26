@@ -22,7 +22,7 @@ class AsyncReviewsAPI(AsyncAPIMixin, BaseReviewsAPI):
 		async with self.session.get(url, params=request.as_query_params(), allow_redirects=False) as response:
 			log.debug(f"A:REVIEWS[{response.status}] {monotonic() - time_start:.1f}s")
 			self.check_response(response)
-			response = ReviewsResponse.from_dict(await response.json())
+			response = ReviewsResponse.model_validate_json(await response.text())
 
 		return response
 

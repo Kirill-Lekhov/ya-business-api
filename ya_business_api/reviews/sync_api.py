@@ -20,7 +20,7 @@ class SyncReviewsAPI(SyncAPIMixin, BaseReviewsAPI):
 		log.debug(f"REVIEWS[{response.status_code}] {response.elapsed.total_seconds()}s")
 		self.check_response(response)
 
-		return ReviewsResponse.from_dict(response.json())
+		return ReviewsResponse.model_validate_json(response.text)
 
 	def send_answer(self, request: AnswerRequest) -> bool:
 		"""

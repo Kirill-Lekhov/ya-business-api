@@ -12,4 +12,5 @@ class SyncCompaniesAPI(SyncAPIMixin, BaseCompaniesAPI):
 		request = request or CompaniesRequest()
 		response = self.session.get(url, allow_redirects=False, params=request.as_query_params())
 		self.check_response(response)
-		return CompaniesResponse.from_dict(response.json())
+
+		return CompaniesResponse.model_validate_json(response.text)

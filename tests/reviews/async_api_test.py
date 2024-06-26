@@ -47,7 +47,7 @@ class TestAsyncReviewsAPI:
 
 		with patch.object(session, "get", return_value=request_context_manager) as session_get_method:
 			with patch("ya_business_api.reviews.async_api.monotonic", return_value=0.0):
-				data = await api.get_reviews(ReviewsRequest(1))
+				data = await api.get_reviews(ReviewsRequest(permanent_id=1))
 				session_get_method.assert_called_once()
 				assert isinstance(data, ReviewsResponse)
 
@@ -57,7 +57,12 @@ class TestAsyncReviewsAPI:
 		caplog.set_level(DEBUG)
 		session = ClientSession()
 		api = AsyncReviewsAPI("CSRFTOKEN", session)
-		request = AnswerRequest("review", "hello", "reviews_token", "answer_token")
+		request = AnswerRequest(
+			review_id="review",
+			text="hello",
+			reviews_csrf_token="reviews_token",
+			answer_csrf_token="answer_token",
+		)
 		response = Response(200, "OK")
 		request_context_manager = RequestContextManager(response)
 

@@ -5,6 +5,7 @@ from ya_business_api.reviews.constants import Ranking
 
 from logging import DEBUG
 from unittest.mock import patch
+from json import dumps
 
 from requests.models import Response
 from requests.sessions import Session
@@ -40,19 +41,24 @@ class TestReviewsAPI:
 				"csrf_token": "CSRF_TOKEN",
 			},
 		}
+		response._content = dumps(data).encode("utf-8")
+		response.encoding = "utf-8"
 
-		with patch.object(response, "json", return_value=data) as response_json_method:
-			with patch.object(api.session, "get", return_value=response) as session_get_method:
-				response = api.get_reviews(ReviewsRequest(1))
-				session_get_method.assert_called_once()
-				response_json_method.assert_called_once()
+		with patch.object(api.session, "get", return_value=response) as session_get_method:
+			response = api.get_reviews(ReviewsRequest(permanent_id=1))
+			session_get_method.assert_called_once()
 
-				assert isinstance(response, ReviewsResponse)
+			assert isinstance(response, ReviewsResponse)
 
 	def test_send_answer(self, caplog):
 		caplog.set_level(DEBUG)
 		api = SyncReviewsAPI("CSRF_TOKEN", Session())
-		request = AnswerRequest("review", "hello", "reviews_token", "answer_token")
+		request = AnswerRequest(
+			review_id="review",
+			text="hello",
+			reviews_csrf_token="reviews_token",
+			answer_csrf_token="answer_token",
+		)
 		response = Response()
 		response.status_code = 200
 

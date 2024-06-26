@@ -4,6 +4,7 @@ from ya_business_api.reviews.dataclasses.reviews import (
 from ya_business_api.reviews.constants import Ranking
 
 import pytest
+from pydantic import ValidationError
 
 
 def get_author_data() -> dict:
@@ -63,8 +64,8 @@ def get_pager_data() -> dict:
 
 
 class TestAuthor:
-	def test_from_dict(self):
-		author = Author.from_dict(get_author_data())
+	def test_validation(self):
+		author = Author(**get_author_data())
 
 		assert isinstance(author, Author)
 		assert author.privacy == "privacy"
@@ -74,8 +75,8 @@ class TestAuthor:
 
 
 class TestInitChatData:
-	def test_from_dict(self):
-		init_chat_data = InitChatData.from_dict(get_init_chat_data())
+	def test_validation(self):
+		init_chat_data = InitChatData(**get_init_chat_data())
 
 		assert isinstance(init_chat_data, InitChatData)
 		assert init_chat_data.entityId == "entity id"
@@ -88,8 +89,8 @@ class TestInitChatData:
 
 
 class TestOwnerComment:
-	def test_from_dict(self):
-		owner_comment = OwnerComment.from_dict(get_owner_comment_data())
+	def test_validation(self):
+		owner_comment = OwnerComment(**get_owner_comment_data())
 
 		assert isinstance(owner_comment, OwnerComment)
 		assert owner_comment.time_created == 1714736208
@@ -97,8 +98,8 @@ class TestOwnerComment:
 
 
 class TestReview:
-	def test_from_dict(self):
-		review = Review.from_dict(get_review_data())
+	def test_validation(self):
+		review = Review(**get_review_data())
 
 		assert isinstance(review, Review)
 		assert review.id == "review id"
@@ -119,18 +120,14 @@ class TestReview:
 
 		data = get_review_data()
 		data['owner_comment'] = get_owner_comment_data()
-		review = Review.from_dict(data)
+		review = Review(**data)
 
 		assert isinstance(review.owner_comment, OwnerComment)
 
-	def test___repr__(self):
-		review = Review.from_dict(get_review_data())
-		assert review.__repr__() == "<Review: review id>"
-
 
 class TestPager:
-	def test_from_dict(self):
-		pager = Pager.from_dict(get_pager_data())
+	def test_validation(self):
+		pager = Pager(**get_pager_data())
 
 		assert isinstance(pager, Pager)
 		assert pager.limit == 20
@@ -139,16 +136,8 @@ class TestPager:
 
 
 class TestReviews:
-	def test___post_init__(self):
-		with pytest.raises(AssertionError, match="Each item of the reviews attr must be of the Review type"):
-			Reviews(
-				pager=Pager(**get_pager_data()),
-				items=["hello"],		# type: ignore - For testing purposes
-				csrf_token="CSRF Token",
-			)
-
-	def test_from_dict(self):
-		reviews = Reviews.from_dict({
+	def test_validation(self):
+		reviews = Reviews(**{
 			"pager": get_pager_data(),
 			"items": [get_review_data(), get_review_data()],
 			"csrf_token": "CSRF Token",
@@ -163,58 +152,44 @@ class TestReviews:
 
 
 class TestFilters:
-	def test___post_init__(self):
-		with pytest.raises(AssertionError):
-			Filters(ranking="unknown")		# type: ignore - For testing purposes
-
-		with pytest.raises(AssertionError):
-			Filters(ranking=Ranking.BY_RATING_ASC, unread=123)		# type: ignore - For testing purposes
-
-	def test_from_dict(self):
-		filters = Filters.from_dict({
-			"ranking": "by_time",
-			"unread": "True",
-		})
+	def test_validation(self):
+		filters = Filters(ranking="by_time", unread="True")
 
 		assert isinstance(filters, Filters)
 		assert filters.ranking is Ranking.BY_TIME
-		assert filters.unread
+		assert filters.unread == "True"
 
-		filters = Filters.from_dict({
-			"ranking": "by_rating_desc",
-			"unread": "False",
-		})
+		filters = Filters(ranking="by_rating_desc", unread="False")
+
 		assert isinstance(filters, Filters)
 		assert filters.ranking is Ranking.BY_RATING_DESC
-		assert not filters.unread
+		assert filters.unread == "False"
 
-		with pytest.raises(ValueError):
-			Filters.from_dict({"ranking": "UNKNOWN"})
+		with pytest.raises(ValidationError):
+			Filters(ranking="UNKNOWN")
 
 
 class TestCurrentState:
-	def test_from_dict(self):
-		current_state = CurrentState.from_dict({
-			"filters": {"ranking": "by_time"},
-		})
+	def test_validation(self):
+		current_state = CurrentState(filters=Filters(ranking="by_time"))
 
 		assert isinstance(current_state, CurrentState)
 		assert isinstance(current_state.filters, Filters)
 
 
 class TestReviewsResponse:
-	def test_from_dict(self):
-		reviews_response = ReviewsResponse.from_dict({
-			"page": 1,
-			"currentState": {
-				"filters": {"ranking": "by_time"},
-			},
-			"list": {
+	def test_validation(self):
+		reviews_response = ReviewsResponse(
+			page=1,
+			currentState=CurrentState(
+				filters=Filters(ranking="by_time"),
+			),
+			list={
 				"pager": get_pager_data(),
 				"items": [],
 				"csrf_token": "CSRF Token",
 			},
-		})
+		)
 
 		assert isinstance(reviews_response, ReviewsResponse)
 		assert reviews_response.page == 1
