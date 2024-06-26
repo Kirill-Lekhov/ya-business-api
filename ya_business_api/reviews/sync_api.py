@@ -5,6 +5,7 @@ from ya_business_api.reviews.constants import SUCCESS_ANSWER_RESPONSE
 from ya_business_api.reviews.dataclasses.reviews import ReviewsResponse
 from ya_business_api.reviews.dataclasses.requests import AnswerRequest, ReviewsRequest
 
+from typing import Union, Literal, overload
 from logging import getLogger; log = getLogger(__name__)
 
 from requests.sessions import Session
@@ -14,11 +15,20 @@ class SyncReviewsAPI(SyncAPIMixin, BaseReviewsAPI):
 	def __init__(self, csrf_token: str, session: Session) -> None:
 		super().__init__(session, csrf_token)
 
-	def get_reviews(self, request: ReviewsRequest) -> ReviewsResponse:
+	@overload
+	def get_reviews(self, request: ReviewsRequest, *, raw: Literal[True]) -> dict: ...
+
+	@overload
+	def get_reviews(self, request: ReviewsRequest, *, raw: Literal[False] = False) -> ReviewsResponse: ...
+
+	def get_reviews(self, request: ReviewsRequest, *, raw: bool = False) -> Union[ReviewsResponse, dict]:
 		url = self.router.reviews(request.permanent_id)
 		response = self.session.get(url, params=request.as_query_params(), allow_redirects=False)
 		log.debug(f"REVIEWS[{response.status_code}] {response.elapsed.total_seconds()}s")
 		self.check_response(response)
+
+		if raw:
+			return response.json()
 
 		return ReviewsResponse.model_validate_json(response.text)
 

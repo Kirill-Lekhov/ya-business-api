@@ -103,6 +103,18 @@ request = ReviewsRequest(
 response = api.reviews.get_reviews(request)
 ```
 
+#### Data validation disabling
+If you want to implement data validation yourself, you can get "raw" data using the `raw` flag.
+```python
+from ya_business_api.sync_api import SyncAPI
+from ya_business_api.reviews.dataclasses.requests import ReviewsRequest
+
+
+api = SyncAPI.build(**kwargs)
+request = ReviewsRequest(permanent_id=<permanent_id>)
+response = api.reviews.get_reviews(request, raw=True)
+```
+
 ### Answering to reviews
 ```python
 # Sync mode
@@ -166,6 +178,16 @@ from ya_business_api.companies.dataclasses.requests import CompaniesRequest
 api = SyncAPI.build(**kwargs)
 request = CompaniesRequest(filter="My Company", page=5)
 response = api.companies.get_companies(request)
+```
+
+#### Data validation disabling
+If you want to implement data validation yourself, you can get "raw" data using the `raw` flag.
+```python
+from ya_business_api.sync_api import SyncAPI
+
+
+api = SyncAPI.build(**kwargs)
+response = api.companies.get_companies()
 ```
 
 ## Shortcuts

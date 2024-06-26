@@ -47,8 +47,11 @@ class TestReviewsAPI:
 		with patch.object(api.session, "get", return_value=response) as session_get_method:
 			response = api.get_reviews(ReviewsRequest(permanent_id=1))
 			session_get_method.assert_called_once()
-
 			assert isinstance(response, ReviewsResponse)
+
+			response = api.get_reviews(ReviewsRequest(permanent_id=1), raw=True)
+			assert isinstance(response, dict)
+			assert response == data
 
 	def test_send_answer(self, caplog):
 		caplog.set_level(DEBUG)

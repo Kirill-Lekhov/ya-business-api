@@ -15,7 +15,8 @@ class TestSyncCompaniesAPI:
 		api = SyncCompaniesAPI(session)
 		response = Response()
 		response.status_code = 200
-		response._content = dumps({'limit': 10, 'listCompanies': [], 'page': 1, 'total': 0}).encode()
+		data = {'limit': 10, 'listCompanies': [], 'page': 1, 'total': 0}
+		response._content = dumps(data).encode()
 		request = CompaniesRequest(filter="Company Name", page=10)
 
 		with patch.object(session, 'get', return_value=response) as session_get_method:
@@ -27,3 +28,8 @@ class TestSyncCompaniesAPI:
 			assert result.total == 0
 			session_get_method.assert_called_once()
 			assert session_get_method.call_args_list[0].kwargs['params'] == {"filter": "Company Name", "page": 10}
+
+		with patch.object(session, 'get', return_value=response) as session_get_method:
+			result = api.get_companies(request, raw=True)
+			assert isinstance(result, dict)
+			assert result == data

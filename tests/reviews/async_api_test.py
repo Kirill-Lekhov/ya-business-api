@@ -51,6 +51,10 @@ class TestAsyncReviewsAPI:
 				session_get_method.assert_called_once()
 				assert isinstance(data, ReviewsResponse)
 
+				data = await api.get_reviews(ReviewsRequest(permanent_id=1), raw=True)
+				assert isinstance(data, dict)
+				assert data == data
+
 		await api.session.close()
 
 	async def test_send_answer(self, caplog):

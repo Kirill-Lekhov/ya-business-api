@@ -5,6 +5,7 @@ from ya_business_api.reviews.constants import SUCCESS_ANSWER_RESPONSE
 from ya_business_api.reviews.dataclasses.reviews import ReviewsResponse
 from ya_business_api.reviews.dataclasses.requests import AnswerRequest, ReviewsRequest
 
+from typing import Union, Literal, overload
 from time import monotonic
 from logging import getLogger; log = getLogger(__name__)
 
@@ -15,16 +16,24 @@ class AsyncReviewsAPI(AsyncAPIMixin, BaseReviewsAPI):
 	def __init__(self, csrf_token: str, session: ClientSession) -> None:
 		super().__init__(session, csrf_token)
 
-	async def get_reviews(self, request: ReviewsRequest) -> ReviewsResponse:
+	@overload
+	async def get_reviews(self, request: ReviewsRequest, *, raw: Literal[True]) -> dict: ...
+
+	@overload
+	async def get_reviews(self, request: ReviewsRequest, *, raw: Literal[False] = False) -> ReviewsResponse: ...
+
+	async def get_reviews(self, request: ReviewsRequest, *, raw: bool = False) -> Union[ReviewsResponse, dict]:
 		url = self.router.reviews(request.permanent_id)
 		time_start = monotonic()
 
 		async with self.session.get(url, params=request.as_query_params(), allow_redirects=False) as response:
 			log.debug(f"A:REVIEWS[{response.status}] {monotonic() - time_start:.1f}s")
 			self.check_response(response)
-			response = ReviewsResponse.model_validate_json(await response.text())
 
-		return response
+			if raw:
+				return await response.json()
+
+			return ReviewsResponse.model_validate_json(await response.text())
 
 	async def send_answer(self, request: AnswerRequest) -> bool:
 		url = self.router.answer()

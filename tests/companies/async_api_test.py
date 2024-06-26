@@ -16,7 +16,8 @@ class TestAsyncCompaniesAPI:
 		session = ClientSession()
 		api = AsyncCompaniesAPI(session)
 		response = Response()
-		response.content = dumps({'limit': 10, 'listCompanies': [], 'page': 1, 'total': 0})
+		data = {'limit': 10, 'listCompanies': [], 'page': 1, 'total': 0}
+		response.content = dumps(data)
 		request = CompaniesRequest(filter="Company Name", page=10)
 		request_context_manager = RequestContextManager(response)
 
@@ -30,3 +31,7 @@ class TestAsyncCompaniesAPI:
 			session_get_method.assert_called_once()
 			assert session_get_method.call_args_list[0].kwargs['params'] == {"filter": "Company Name", "page": 10}
 
+		with patch.object(session, 'get', return_value=request_context_manager) as session_get_method:
+			result = await api.get_companies(request, raw=True)
+			assert isinstance(result, dict)
+			assert result == data
