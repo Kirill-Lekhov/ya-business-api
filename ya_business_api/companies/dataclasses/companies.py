@@ -1,6 +1,7 @@
 from typing import Tuple, List, Dict, Union, Optional, Any
 
 from pydantic.main import BaseModel
+from pydantic.fields import Field
 
 
 Number = Union[float, int]
@@ -59,8 +60,8 @@ class WorkInterval(BaseModel):
 
 
 class GeoCampaign(BaseModel):
-	hasActive: bool
-	hasDraft: bool
+	has_active: bool = Field(alias="hasActive")
+	has_draft: bool = Field(alias="hasDraft")
 
 
 class Name(BaseModel):
@@ -101,7 +102,7 @@ class Phone(BaseModel):
 class Rubric(BaseModel):
 	features: List[Any]		# ???
 	id: int
-	isMain: bool
+	is_main: bool = Field(alias="isMain")
 	name: str
 
 
@@ -140,10 +141,10 @@ class Chain(BaseModel):
 	permanent_id: int
 	phones: List[Phone]
 	urls: List[CompanyURL]
-	displayName: str
+	display_name: str = Field(alias="displayName")
 	names: List[Name]
 	rubrics: List[Dict[str, Rubric]]
-	brandCount: int
+	brand_count: int = Field(alias="brandCount")
 
 
 class Company(BaseModel):
@@ -153,16 +154,16 @@ class Company(BaseModel):
 
 	address: Address
 	base_work_intervals: List[WorkInterval]
-	displayName: str
+	display_name: str = Field(alias="displayName")
 	emails: List[str]
 	feature_values: List[Any]					# ???
-	geoCampaign: GeoCampaign
+	geo_campaign: GeoCampaign = Field(alias="geoCampaign")
 	has_owner: bool
 	is_top_rated: bool
 	legal_info: dict							# ???
 	nail: dict									# ???
 	names: List[Name]
-	noAccess: bool
+	no_access: bool = Field(alias="noAccess")
 	object_role: str							# owner, delegate
 	phones: List[Phone]
 	photos: List[Any]							# ???
@@ -181,16 +182,16 @@ class Company(BaseModel):
 	diffs: Dict[str, int] = {}
 	service_profiles: List[ServiceProfile] = []
 	logo: Optional[CompanyLogo] = None
-	fromGeosearch: Optional[bool] = None
+	from_geosearch: Optional[bool] = Field(None, alias="fromGeosearch")
 	is_online: Optional[bool] = None
 	owner: Optional[int] = None
 	panorama: Optional[Panorama] = None
 	rating: Optional[Number] = None
-	reviewsCount: Optional[int] = None
+	reviews_count: Optional[int] = Field(None, alias="reviewsCount")
 
 
 class CompaniesResponse(BaseModel):
 	limit: int
-	listCompanies: List[Company]
+	list_companies: List[Company] = Field(alias="listCompanies")
 	page: int
 	total: int

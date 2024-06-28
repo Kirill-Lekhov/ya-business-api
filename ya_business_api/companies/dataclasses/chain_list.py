@@ -1,12 +1,13 @@
 from typing import List
 
-from pydantic import BaseModel, Field
+from pydantic.main import BaseModel
+from pydantic.fields import Field
 
 
 class ChainBranchesList(BaseModel):
 	val: List[int]
-	chainId: int
-	geoId: int
+	chain_id: int = Field(alias="chainId")
+	geo_id: int = Field(alias="geoId")
 
 
 class PagerBemJSONMods(BaseModel):
@@ -21,8 +22,8 @@ class PagerBemJSONPager(BaseModel):
 
 
 class PagerBemJSON(BaseModel):
-	totalPages: int
-	currentPage: int
+	total_pages: int = Field(alias="totalPages")
+	current_page: int = Field(alias="currentPage")
 	params: dict
 	url: str
 	block: str
@@ -43,11 +44,11 @@ class CompanyCard(BaseModel):
 
 class CompanyCardWithPhoto(CompanyCard):
 	type: str		# ordinal
-	companyId: int
+	company_id: int = Field(alias="companyId")
 	permalink: int
-	editPhotoUrl: str
+	edit_photo_url: str = Field(alias="editPhotoUrl")
 	url: str
-	noAccess: bool
+	no_access: bool = Field(alias="noAccess")
 	name: str
 
 

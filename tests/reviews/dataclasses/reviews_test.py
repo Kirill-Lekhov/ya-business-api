@@ -79,12 +79,12 @@ class TestInitChatData:
 		init_chat_data = InitChatData(**get_init_chat_data())
 
 		assert isinstance(init_chat_data, InitChatData)
-		assert init_chat_data.entityId == "entity id"
-		assert init_chat_data.supplierServiceSlug == "supplier service slug"
+		assert init_chat_data.entity_id == "entity id"
+		assert init_chat_data.supplier_service_slug == "supplier service slug"
 		assert init_chat_data.name == "name"
 		assert init_chat_data.description == "description"
-		assert init_chat_data.entityUrl == "entity url"
-		assert init_chat_data.entityImage == "entity image"
+		assert init_chat_data.entity_url == "entity url"
+		assert init_chat_data.entity_image == "entity image"
 		assert init_chat_data.version == 0
 
 
@@ -193,5 +193,5 @@ class TestReviewsResponse:
 
 		assert isinstance(reviews_response, ReviewsResponse)
 		assert reviews_response.page == 1
-		assert isinstance(reviews_response.currentState, CurrentState)
+		assert isinstance(reviews_response.current_state, CurrentState)
 		assert isinstance(reviews_response.list, Reviews)

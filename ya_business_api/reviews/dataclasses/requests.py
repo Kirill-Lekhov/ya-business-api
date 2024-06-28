@@ -1,6 +1,6 @@
 from ya_business_api.reviews.constants import Ranking
 
-from pydantic import BaseModel
+from pydantic.main import BaseModel
 
 
 class AnswerRequest(BaseModel):

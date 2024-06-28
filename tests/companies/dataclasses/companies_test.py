@@ -282,8 +282,8 @@ class TestGeoCampaign:
 	def test_validation(self):
 		geo_campaign = GeoCampaign(**make_geo_campaign())
 		assert isinstance(geo_campaign, GeoCampaign)
-		assert geo_campaign.hasActive
-		assert not geo_campaign.hasDraft
+		assert geo_campaign.has_active
+		assert not geo_campaign.has_draft
 
 
 class TestName:
@@ -339,7 +339,7 @@ class TestRubric:
 		assert isinstance(rubric, Rubric)
 		assert rubric.features == []
 		assert rubric.id == 123
-		assert rubric.isMain
+		assert rubric.is_main
 		assert rubric.name == "Rubric"
 
 
@@ -386,11 +386,11 @@ class TestCompany:
 		assert isinstance(company, Company)
 		assert isinstance(company.address, Address)
 		assert len(company.base_work_intervals) == 2
-		assert company.displayName == "Display Name"
+		assert company.display_name == "Display Name"
 		assert company.emails == ["email1@example.com", "email2@example.com"]
 		assert company.feature_values == []
-		assert company.fromGeosearch
-		assert isinstance(company.geoCampaign, GeoCampaign)
+		assert company.from_geosearch
+		assert isinstance(company.geo_campaign, GeoCampaign)
 		assert company.has_owner
 		assert company.id == 112233
 		assert company.is_online
@@ -398,7 +398,7 @@ class TestCompany:
 		assert company.legal_info == {}
 		assert company.nail == {}
 		assert len(company.names) == 2
-		assert company.noAccess
+		assert company.no_access
 		assert company.object_role == "owner"
 		assert company.owner == 67237823487
 		assert isinstance(company.panorama, Panorama)
@@ -409,7 +409,7 @@ class TestCompany:
 		assert company.profile == {}
 		assert company.publishing_status == "publish"
 		assert company.rating == 4.99
-		assert company.reviewsCount == 999
+		assert company.reviews_count == 999
 		assert len(company.rubrics) == 2
 		assert {tuple(i.keys())[0] for i in company.rubrics} == {'Rubric'}
 		assert company.scheduled_work_intervals == []
@@ -432,6 +432,6 @@ class TestCompaniesResponse:
 	def test_validation(self):
 		response = CompaniesResponse(**make_companies_response())
 		assert response.limit == 10
-		assert len(response.listCompanies) == 2
+		assert len(response.list_companies) == 2
 		assert response.page == 1
 		assert response.total == 100

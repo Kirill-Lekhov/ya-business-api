@@ -162,7 +162,7 @@ class TestSyncCompaniesAPI:
 			result = api.get_companies(request)
 			assert isinstance(result, CompaniesResponse)
 			assert result.limit == 10
-			assert result.listCompanies == []
+			assert result.list_companies == []
 			assert result.page == 1
 			assert result.total == 0
 			session_get_method.assert_called_once()
@@ -185,7 +185,7 @@ class TestSyncCompaniesAPI:
 			result = api.get_chain_list(request)
 			assert isinstance(result, ChainListResponse)
 			assert result.pager.bemjson.pager.total == 38
-			assert result.chain_branches_list.chainId == 1
+			assert result.chain_branches_list.chain_id == 1
 			assert len(result.company_cards) == 1
 			session_post_method.assert_called_once()
 			assert session_post_method.call_args_list[0].kwargs['params'] == {"geo_id": 5, "page": 10}

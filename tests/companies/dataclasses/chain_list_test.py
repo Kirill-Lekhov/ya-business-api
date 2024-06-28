@@ -80,8 +80,8 @@ class TestChainBranchesList:
 		chain_branches_list = ChainBranchesList(**make_chain_branches_list())
 		assert isinstance(chain_branches_list, ChainBranchesList)
 		assert chain_branches_list.val == [1, 2, 3]
-		assert chain_branches_list.chainId == 0
-		assert chain_branches_list.geoId == 0
+		assert chain_branches_list.chain_id == 0
+		assert chain_branches_list.geo_id == 0
 
 
 class TestPagerBemJSONMods:
@@ -107,8 +107,8 @@ class TestPagerBemJSON:
 		assert isinstance(pager_bem_json, PagerBemJSON)
 		assert isinstance(pager_bem_json.mods, PagerBemJSONMods)
 		assert isinstance(pager_bem_json.pager, PagerBemJSONPager)
-		assert pager_bem_json.totalPages == 100
-		assert pager_bem_json.currentPage == 1
+		assert pager_bem_json.total_pages == 100
+		assert pager_bem_json.current_page == 1
 		assert pager_bem_json.params == {"unknown": "params"}
 		assert pager_bem_json.url == "localhost"
 		assert pager_bem_json.block == "of gold"
@@ -139,11 +139,11 @@ class TestCompanyCardWithPhoto:
 		assert company_card_with_photo.address == "Pushkin Street, Kolotushkin house"
 		assert company_card_with_photo.rubrics == "jokes"
 		assert company_card_with_photo.type == "ordinal"
-		assert company_card_with_photo.companyId == 1
+		assert company_card_with_photo.company_id == 1
 		assert company_card_with_photo.permalink == 1
-		assert company_card_with_photo.editPhotoUrl == "localhost:80"
+		assert company_card_with_photo.edit_photo_url == "localhost:80"
 		assert company_card_with_photo.url == "localhost:443"
-		assert company_card_with_photo.noAccess == False
+		assert company_card_with_photo.no_access == False
 		assert company_card_with_photo.name == "Nameless"
 
 

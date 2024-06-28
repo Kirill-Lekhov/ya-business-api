@@ -2,7 +2,8 @@ from ya_business_api.reviews.constants import Ranking
 
 from typing import List, Optional
 
-from pydantic import BaseModel
+from pydantic.main import BaseModel
+from pydantic.fields import Field
 
 
 class Author(BaseModel):
@@ -13,12 +14,12 @@ class Author(BaseModel):
 
 
 class InitChatData(BaseModel):
-	entityId: str
-	supplierServiceSlug: str
+	entity_id: str = Field(alias="entityId")
+	supplier_service_slug: str = Field(alias="supplierServiceSlug")
 	name: str
 	description: str
-	entityUrl: str
-	entityImage: str
+	entity_url: str = Field(alias="entityUrl")
+	entity_image: str = Field(alias="entityImage")
 	version: int
 
 
@@ -72,5 +73,5 @@ class CurrentState(BaseModel):
 
 class ReviewsResponse(BaseModel):
 	page: int
-	currentState: CurrentState
+	current_state: CurrentState = Field(alias="currentState")
 	list: Reviews

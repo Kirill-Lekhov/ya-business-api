@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Collection, Union
 
-from pydantic import BaseModel
+from pydantic.main import BaseModel
 from bs4.element import Tag
 
 
