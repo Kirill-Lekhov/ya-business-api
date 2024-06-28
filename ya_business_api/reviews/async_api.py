@@ -1,4 +1,5 @@
 from ya_business_api.core.mixins.asynchronous import AsyncAPIMixin
+from ya_business_api.core.constants import CSRF_TOKEN_HEADER
 from ya_business_api.reviews.base_api import BaseReviewsAPI
 from ya_business_api.reviews.constants import SUCCESS_ANSWER_RESPONSE
 from ya_business_api.reviews.dataclasses.reviews import ReviewsResponse
@@ -43,7 +44,7 @@ class AsyncReviewsAPI(AsyncAPIMixin, BaseReviewsAPI):
 			"answerCsrfToken": request.answer_csrf_token,
 			"reviewsCsrfToken": request.reviews_csrf_token,
 		}
-		headers = {"X-CSRF-Token": self.csrf_token}
+		headers = {CSRF_TOKEN_HEADER: self.csrf_token}
 		time_start = monotonic()
 
 		async with self.session.post(url, json=data, headers=headers, allow_redirects=False) as response:

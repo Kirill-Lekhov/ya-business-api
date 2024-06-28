@@ -19,7 +19,7 @@ class SyncAPI:
 		self.csrf_token = csrf_token
 		self.session = session
 		self.reviews = SyncReviewsAPI(csrf_token, session)
-		self.companies = SyncCompaniesAPI(session)
+		self.companies = SyncCompaniesAPI(csrf_token, session)
 		self.service = SyncServiceAPI(session)
 
 	@classmethod

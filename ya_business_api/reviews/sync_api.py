@@ -1,4 +1,5 @@
 from ya_business_api.core.mixins.synchronous import SyncAPIMixin
+from ya_business_api.core.constants import CSRF_TOKEN_HEADER
 from ya_business_api.reviews.base_api import BaseReviewsAPI
 from ya_business_api.reviews.constants import SUCCESS_ANSWER_RESPONSE
 from ya_business_api.reviews.dataclasses.reviews import ReviewsResponse
@@ -52,7 +53,7 @@ class SyncReviewsAPI(SyncAPIMixin, BaseReviewsAPI):
 				"reviewsCsrfToken": request.reviews_csrf_token,
 			},
 			headers={
-				"X-CSRF-Token": self.csrf_token,
+				CSRF_TOKEN_HEADER: self.csrf_token,
 			},
 			allow_redirects=False,
 		)

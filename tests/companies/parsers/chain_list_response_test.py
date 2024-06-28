@@ -1,18 +1,14 @@
-from ya_business_api.companies.async_api import AsyncCompaniesAPI
-from ya_business_api.companies.dataclasses.companies import CompaniesResponse
+from ya_business_api.core.exceptions import ParserError
+from ya_business_api.companies.parsers.chain_list_response import ChainListResponseParser
 from ya_business_api.companies.dataclasses.chain_list import ChainListResponse
-from ya_business_api.companies.dataclasses.requests import CompaniesRequest, ChainListRequest
-from tests.aiohttp import Response, RequestContextManager
 
 from typing import Final
-from json import dumps
-from unittest.mock import patch
 
 import pytest
-from aiohttp.client import ClientSession
+from bs4 import BeautifulSoup
 
 
-CHAIN_LIST_CONTENT: Final[str] = """
+CORRECT_CONTENT: Final[str] = """
 <div
 	class="chain-branches__list i-bem"
 	data-bem='{"chain-branches__list": {"val": [], "chainId": 1, "geoId": 1}}'
@@ -147,52 +143,38 @@ CHAIN_LIST_CONTENT: Final[str] = """
 	</div>
 </div>
 """
+CONTENT_WITHOUT_CHAIN_BRANCHES_LIST: Final[str] = "<div></div>"
+CONTENT_WITHOUT_PAGER: Final[str] = """
+<div
+	class="chain-branches__list i-bem"
+	data-bem='{"chain-branches__list": {"val": [], "chainId": 1, "geoId": 1}}'
+></div>
+"""
 
 
-@pytest.mark.asyncio
-class TestAsyncCompaniesAPI:
-	async def test_get_companies(self):
-		session = ClientSession()
-		api = AsyncCompaniesAPI("TOKEN", session)
-		response = Response()
-		data = {'limit': 10, 'listCompanies': [], 'page': 1, 'total': 0}
-		response.content = dumps(data)
-		request = CompaniesRequest(filter="Company Name", page=10)
-		request_context_manager = RequestContextManager(response)
+class TestChainListResponseParser:
+	def test_parse(self):
+		parser = ChainListResponseParser()
+		chain_list_response = parser.parse(CORRECT_CONTENT)
+		assert isinstance(chain_list_response, ChainListResponse)
 
-		with patch.object(session, 'get', return_value=request_context_manager) as session_get_method:
-			result = await api.get_companies(request)
-			assert isinstance(result, CompaniesResponse)
-			assert result.limit == 10
-			assert result.listCompanies == []
-			assert result.page == 1
-			assert result.total == 0
-			session_get_method.assert_called_once()
-			assert session_get_method.call_args_list[0].kwargs['params'] == {"filter": "Company Name", "page": 10}
+	def test_parse__without_chain_branches_list(self):
+		parser = ChainListResponseParser()
 
-		with patch.object(session, 'get', return_value=request_context_manager):
-			result = await api.get_companies(request, raw=True)
-			assert isinstance(result, dict)
-			assert result == data
+		with pytest.raises(ParserError, match="Chain branches list node doesn't exist"):
+			parser.parse(CONTENT_WITHOUT_CHAIN_BRANCHES_LIST)
 
-	async def test_get_chain_list(self):
-		session = ClientSession()
-		api = AsyncCompaniesAPI("TOKEN", session)
-		response = Response()
-		response.content = CHAIN_LIST_CONTENT
-		request = ChainListRequest(tycoon_id=1, geo_id=5, page=10)
-		request_context_manager = RequestContextManager(response)
+	def test_parse__without_pager(self):
+		parser = ChainListResponseParser()
 
-		with patch.object(session, 'post', return_value=request_context_manager) as session_post_method:
-			result = await api.get_chain_list(request)
-			assert isinstance(result, ChainListResponse)
-			assert result.pager.bemjson.pager.total == 38
-			assert result.chain_branches_list.chainId == 1
-			assert len(result.company_cards) == 1
-			session_post_method.assert_called_once()
-			assert session_post_method.call_args_list[0].kwargs['params'] == {"geo_id": 5, "page": 10}
+		with pytest.raises(ParserError, match="Pager node doesn't exist"):
+			parser.parse(CONTENT_WITHOUT_PAGER)
 
-		with patch.object(session, 'post', return_value=request_context_manager):
-			result = await api.get_chain_list(request, raw=True)
-			assert isinstance(result, str)
-			assert result == CHAIN_LIST_CONTENT
+	def test_parser_company_cards(self):
+		parser = ChainListResponseParser()
+		assert parser.parse_company_cards([]) == []
+
+		soup = BeautifulSoup(CORRECT_CONTENT, "html.parser")
+		nodes = soup.select("div.chain-branches__item")
+		company_cards = parser.parse_company_cards(nodes)
+		assert len(company_cards) == 1

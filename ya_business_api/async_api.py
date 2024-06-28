@@ -20,7 +20,7 @@ class AsyncAPI:
 		self.csrf_token = csrf_token
 		self.session = session
 		self.reviews = AsyncReviewsAPI(csrf_token, session)
-		self.companies = AsyncCompaniesAPI(session)
+		self.companies = AsyncCompaniesAPI(csrf_token, session)
 		self.service = AsyncServiceAPI(session)
 
 	@classmethod

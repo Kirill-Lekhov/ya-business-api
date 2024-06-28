@@ -4,6 +4,5 @@ from ya_business_api.companies.router import CompaniesRouter
 
 class TestBaseAPI:
 	def test_make_router(self):
-		api = BaseCompaniesAPI()
+		api = BaseCompaniesAPI("TOKEN")
 		assert isinstance(api.make_router(), CompaniesRouter)
-

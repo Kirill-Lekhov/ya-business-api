@@ -5,6 +5,7 @@ from enum import Enum
 BASE_URL: Final[str] = "https://yandex.ru/sprav"
 PASSPORT_URL: Final[str] = "https://passport.yandex.ru"
 INVALID_TOKEN_STATUSES: Final[Set[int]] = {488, 401}
+CSRF_TOKEN_HEADER: Final[str] = "X-CSRF-Token"
 
 
 class Cookie(Enum):

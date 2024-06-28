@@ -17,3 +17,10 @@ class CSRFTokenError(APIError):
 	Invalid CSRF token error.
 	"""
 	pass
+
+
+class ParserError(APIError):
+	"""
+	Basic parser error.
+	"""
+	pass
