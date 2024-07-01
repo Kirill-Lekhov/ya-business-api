@@ -66,64 +66,36 @@ getData()
 
 ## Reviews
 ### Reviews fetching
+* Async mode support: ✅;
+* Validation disabling: ✅.
 ```python
 # Sync mode
 from ya_business_api.sync_api import SyncAPI
 from ya_business_api.reviews.dataclasses.requests import ReviewsRequest
 
 
-api = SyncAPI.build(**kwargs)
-request = ReviewsRequest(permanent_id=<permanent_id>)
-response = api.reviews.get_reviews(request)
-
-# Async mode
-from ya_business_api.async_api import AsyncAPI
-from ya_business_api.reviews.dataclasses.requests import ReviewsRequest
-
-
-api = await AsyncAPI.build(**kwargs)
-request = ReviewsRequest(permanent_id=<permanent_id>)
-response = await api.reviews.get_reviews(request)
-await api.session.close()
-```
-
-#### Filtering and ordering
-```python
-from ya_business_api.sync_api import SyncAPI
-from ya_business_api.reviews.dataclasses.requests import ReviewsRequest
-from ya_business_api.reviews.constants import Ranking
-
-
-api = SyncAPI.build(**kwargs)
+api = SyncAPI.build(...)
 request = ReviewsRequest(
 	permanent_id=<permanent_id>,
-	ranking=Ranking.BY_RATING_DESC,
-	unread=True,
-	page=5,
+	ranking=Ranking.BY_RATING_DESC,		# Optional
+	unread=True,						# Optional
+	page=5,								# Optional
 )
-response = api.reviews.get_reviews(request)
-```
-
-#### Data validation disabling
-If you want to implement data validation yourself, you can get "raw" data using the `raw` flag.
-```python
-from ya_business_api.sync_api import SyncAPI
-from ya_business_api.reviews.dataclasses.requests import ReviewsRequest
-
-
-api = SyncAPI.build(**kwargs)
-request = ReviewsRequest(permanent_id=<permanent_id>)
-response = api.reviews.get_reviews(request, raw=True)
+response = api.reviews.get_reviews(
+	request,
+	raw=False,		# Optional
+)
 ```
 
 ### Answering to reviews
+* Async mode support: ✅;
+* Validation disabling: ❌.
 ```python
-# Sync mode
 from ya_business_api.sync_api import SyncAPI
 from ya_business_api.reviews.dataclasses.requests import AnswerRequest
 
 
-api = SyncAPI.build(**kwargs)
+api = SyncAPI.build(...)
 reviews = api.reviews.get_reviews()
 request = AnswerRequest(
 	review_id=reviews.list.items[0].id,
@@ -132,89 +104,69 @@ request = AnswerRequest(
 	answer_csrf_token=reviews.list.items[0].business_answer_csrf_token,
 )
 response = api.reviews.send_answer(request)
-
-# Async mode
-from ya_business_api.async_api import AsyncAPI
-from ya_business_api.reviews.dataclasses.requests import AnswerRequest
-
-
-api = await AsyncAPI.build(**kwargs)
-reviews = await api.reviews.get_reviews()
-request = AnswerRequest(
-	review_id=reviews.list.items[0].id,
-	text="Thank you!",
-	reviews_csrf_token=reviews.list.csrf_token,
-	answer_csrf_token=reviews.list.items[0].business_answer_csrf_token,
-)
-response = await api.reviews.send_answer(request)
-await api.session.close()
 ```
 
 ## Companies
 ### Receiving companies
-```python
-# Sync mode
-from ya_business_api.sync_api import SyncAPI
-
-
-api = SyncAPI.build(**kwargs)
-response = api.companies.get_companies()
-
-# Async mode
-from ya_business_api.async_mode
-
-
-api = await AsyncAPI.build(**kwargs)
-response = await api.companies.get_companies()
-
-await api.session.close()
-```
-
-#### Filtering and pagination
+* Async mode support: ✅;
+* Validation disabling: ✅.
 ```python
 from ya_business_api.sync_api import SyncAPI
 from ya_business_api.companies.dataclasses.requests import CompaniesRequest
 
 
-api = SyncAPI.build(**kwargs)
+api = SyncAPI.build(...)
 request = CompaniesRequest(filter="My Company", page=5)
-response = api.companies.get_companies(request)
+response = api.companies.get_companies(
+	request,		# Optional
+	raw=False,		# Optional
+)
 ```
 
-#### Data validation disabling
-If you want to implement data validation yourself, you can get "raw" data using the `raw` flag.
+### Receiving company chains
+Some companies have several branches, in such cases the company will have the "chain" type.
+This method will allow you to get a list of all branches.
+
+
+
+* Async mode support: ✅;
+* Validation disabling: ✅.
 ```python
 from ya_business_api.sync_api import SyncAPI
+from ya_business_api.companies.dataclasses.request import ChainListRequest
 
 
-api = SyncAPI.build(**kwargs)
-response = api.companies.get_companies()
+api = SyncAPI.build(...)
+request = ChainListRequest(
+	tycoon_id=<tycoon_id>,		# Can be found in the Company dataclass.
+	geo_id=0,					# Optional.
+	page=1,						# Optional
+)
+response = api.companies.get_chain_list(
+	request,		# Optional
+	raw=False,		# Optional
+)
 ```
+
+#### ⚠️WARNING⚠️
+Raw response of this method is HTML text.
 
 ## Service
 ### Receiving CSRF token
+* Async mode support: ✅;
+* Validation disabling: ❌.
 ```python
-# Sync mode
 from ya_business_api.sync_api import SyncAPI
 
 
-api = SyncAPI.build(**kwargs)
+api = SyncAPI.build(...)
 csrf_token = api.service.get_csrf_token()
-
-# Async mode
-from ya_business_api.async_api import AsyncAPI
-
-
-api = await AsyncAPI.build(**kwargs)
-csrf_token = await api.service.get_csrf_token()
-
-await api.session.close()
 ```
 
 ## Shortcuts
 ### Answers deleting
 ```python
-api.reviews.send_answer(AnswerRequest(text="", **kwargs))
+api.reviews.send_answer(AnswerRequest(text="", ...))
 ```
 
 ### Automatic closing of the session (async mode)
@@ -222,4 +174,42 @@ api.reviews.send_answer(AnswerRequest(text="", **kwargs))
 async with await AsyncAPI.make_session(session_id=..., session_id2=...) as session:
 	api = AsyncAPI(permanent_id=..., csrf_token=..., session=session)
 	...
+```
+
+## Examples
+### Getting the number of reviews asynchronously
+```python
+from ya_business_api.async_api import AsyncAPI
+from ya_business_api.companies.dataclasses.requests import ChainListRequest
+from ya_business_api.companies.dataclasses.chain_list import CompanyCardWithPhoto
+from ya_business_api.reviews.dataclasses.requests import ReviewsRequest
+
+
+api = await AsyncAPI.build(...)
+
+try:
+	companies_response = await api.companies.get_companies()
+	open_companies = filter(lambda x: x.publishing_status != "closed", companies_response.list_companies)
+
+	for company in open_companies:
+		page = 1
+		chain_list_request = ChainListRequest(tycoon_id=company.tycoon_id, page=page)
+		chain_list_response = await api.companies.get_chain_list(chain_list_request)
+
+		while len(chain_list_response.company_cards):
+			company_cards = [i for i in chain_list_response.company_cards if isinstance(i, CompanyCardWithPhoto)]
+			# Only company cards with photo contains permalink
+			# It is possible that the branch also contains branches, but this is not taken into account in this guide
+
+			for card in company_cards:
+				reviews_request = ReviewsRequest(permanent_id=card.permalink)
+				reviews_response = await api.reviews.get_reviews(reviews_request)
+				print(company.permanent_id, card.permalink, reviews_response.list.pager.total)
+
+			page += 1
+			chain_list_request = ChainListRequest(tycoon_id=company.tycoon_id, page=page)
+			chain_list_response = await api.companies.get_chain_list(chain_list_request)
+
+finally:
+	await api.session.close()
 ```
