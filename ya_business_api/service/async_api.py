@@ -9,6 +9,7 @@ from logging import getLogger; log = getLogger(__name__)
 class AsyncServiceAPI(AsyncAPIMixin, BaseServiceAPI):
 	async def get_csrf_token(self) -> Optional[str]:
 		url = self.router.csrf_token()
+		self.set_i_cookie()
 		time_start = monotonic()
 
 		async with self.session.post(url, allow_redirects=False) as response:
