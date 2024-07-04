@@ -159,7 +159,7 @@ class Company(BaseModel):
 	feature_values: List[Any]					# ???
 	geo_campaign: GeoCampaign = Field(alias="geoCampaign")
 	has_owner: bool
-	is_top_rated: bool
+	is_top_rated: Optional[bool]
 	legal_info: dict							# ???
 	nail: dict									# ???
 	names: List[Name]
