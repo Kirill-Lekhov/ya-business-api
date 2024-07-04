@@ -9,8 +9,8 @@ from pydantic.fields import Field
 class Author(BaseModel):
 	privacy: str
 	user: str
-	uid: int
-	avatar: str
+	uid: Optional[int] = None
+	avatar: Optional[str] = None
 
 
 class InitChatData(BaseModel):
