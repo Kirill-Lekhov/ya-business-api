@@ -1,5 +1,5 @@
 from ya_business_api.reviews.dataclasses.reviews import (
-	Author, InitChatData, OwnerComment, Review, Pager, Reviews, Filters, CurrentState, ReviewsResponse,
+	Author, InitChatData, OwnerComment, Review, Pager, Reviews, Filters, CurrentState, ReviewsResponse, Photo,
 )
 from ya_business_api.reviews.constants import Ranking
 
@@ -32,6 +32,14 @@ def get_owner_comment_data() -> dict:
 	return {
 		"time_created": 1714736208,
 		"text": "Thanks for review",
+	}
+
+
+def get_photo() -> dict:
+	return {
+		"link": "/get-altay/00000000/2a0000018b7b20d860e00002d00a0000a000/orig",
+		"width": 1920,
+		"height": 1080,
 	}
 
 
@@ -97,6 +105,15 @@ class TestOwnerComment:
 		assert owner_comment.text == "Thanks for review"
 
 
+class TestPhoto:
+	def test_validation(self):
+		photo = Photo(**get_photo())
+
+		assert photo.link == "/get-altay/00000000/2a0000018b7b20d860e00002d00a0000a000/orig"
+		assert photo.width == 1920
+		assert photo.height == 1080
+
+
 class TestReview:
 	def test_validation(self):
 		review = Review(**get_review_data())
@@ -117,12 +134,20 @@ class TestReview:
 		assert review.public_rating == True
 		assert review.business_answer_csrf_token == "business answer csrf token"
 		assert review.owner_comment is None
+		assert review.photos == []
 
 		data = get_review_data()
 		data['owner_comment'] = get_owner_comment_data()
 		review = Review(**data)
 
 		assert isinstance(review.owner_comment, OwnerComment)
+
+	def test_validation__extended(self):
+		review_data = get_review_data()
+		review_data["photos"] = [get_photo(), get_photo(), get_photo()]
+		review = Review(**review_data)
+
+		assert len(review.photos) == 3
 
 
 class TestPager:

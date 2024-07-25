@@ -28,6 +28,12 @@ class OwnerComment(BaseModel):
 	text: str
 
 
+class Photo(BaseModel):
+	link: str
+	width: int
+	height: int
+
+
 class Review(BaseModel):
 	id: str
 	lang: str
@@ -46,6 +52,7 @@ class Review(BaseModel):
 
 	# Optional fields
 	owner_comment: Optional[OwnerComment] = None
+	photos: List[Photo] = Field(default_factory=list)
 
 
 class Pager(BaseModel):
