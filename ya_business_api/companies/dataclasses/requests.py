@@ -19,18 +19,10 @@ class CompaniesRequest(BaseModel):
 		return result
 
 
-class ChainListRequest(BaseModel):
+class ChainBranchesRequest(BaseModel):
 	tycoon_id: int
-	geo_id: Optional[int] = None
+
 	page: Optional[int] = None
 
 	def as_query_params(self) -> dict:
-		result = {}
-
-		if self.geo_id:
-			result['geo_id'] = self.geo_id
-
-		if self.page:
-			result['page'] = self.page
-
-		return result
+		return self.model_dump(include={"page"}, exclude_none=True)

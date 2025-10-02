@@ -41,9 +41,12 @@ class AsyncReviewsAPI(AsyncAPIMixin, BaseReviewsAPI):
 		data = {
 			"reviewId": request.review_id,
 			"text": request.text,
-			"answerCsrfToken": request.answer_csrf_token,
 			"reviewsCsrfToken": request.reviews_csrf_token,
 		}
+
+		if request.answer_csrf_token is not None:
+			data["answerCsrfToken"] = request.answer_csrf_token
+
 		headers = {CSRF_TOKEN_HEADER: self.csrf_token}
 		time_start = monotonic()
 

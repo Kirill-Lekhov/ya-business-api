@@ -8,4 +8,4 @@ class TestCompaniesRouter:
 
 	def test_chain_list(self):
 		router = CompaniesRouter()
-		assert router.chain_list(1) == "https://yandex.ru/sprav/api/view/chain/1/list/"
+		assert router.chain_branches(1) == "https://yandex.ru/sprav/api/chain/1/branches/"

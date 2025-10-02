@@ -1,7 +1,7 @@
 from ya_business_api.reviews.async_api import AsyncReviewsAPI
 from ya_business_api.companies.async_api import AsyncCompaniesAPI
 from ya_business_api.service.async_api import AsyncServiceAPI
-from ya_business_api.core.constants import Cookie
+from ya_business_api.core.constants import Cookie, DEFAULT_HEADERS
 from ya_business_api.core.exceptions import CSRFTokenError
 
 from typing import Optional
@@ -39,7 +39,7 @@ class AsyncAPI:
 
 	@staticmethod
 	async def make_session(session_id: str, session_id2: str) -> ClientSession:
-		session = ClientSession()
+		session = ClientSession(headers=DEFAULT_HEADERS)
 		session.cookie_jar.update_cookies({
 			Cookie.SESSION_ID.value: session_id,
 			Cookie.SESSION_ID2.value: session_id2,

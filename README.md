@@ -75,11 +75,18 @@ from ya_business_api.reviews.dataclasses.requests import ReviewsRequest
 
 
 api = SyncAPI.build(...)
+# Requesting unread reviews only
 request = ReviewsRequest(
 	permanent_id=<permanent_id>,
-	ranking=Ranking.BY_RATING_DESC,		# Optional
-	unread=True,						# Optional
-	page=5,								# Optional
+	unread=True,
+	ranking=Ranking.BY_RATING_DESC,			# Optional
+	continue_token="CONTINUE_TOKEN",		# Optional
+)
+# Requesting all reviews
+request = ReviewsRequest(
+	permanent_id=<permanent_id>,
+	page=9999,								# Optional
+	ranking=Ranking.BY_RATING_DESC,			# Optional
 )
 response = api.reviews.get_reviews(
 	request,
@@ -97,11 +104,18 @@ from ya_business_api.reviews.dataclasses.requests import AnswerRequest
 
 api = SyncAPI.build(...)
 reviews = api.reviews.get_reviews()
+# Legacy
 request = AnswerRequest(
 	review_id=reviews.list.items[0].id,
 	text="Thank you!",
 	reviews_csrf_token=reviews.list.csrf_token,
 	answer_csrf_token=reviews.list.items[0].business_answer_csrf_token,
+)
+# New
+request = AnswerRequest(
+	review_id=reviews.list.items[0].id,
+	text="Thank you!",
+	reviews_csrf_token="",
 )
 response = api.reviews.send_answer(request)
 ```
@@ -123,33 +137,27 @@ response = api.companies.get_companies(
 )
 ```
 
-### Receiving company chains
+### Receiving company chain branches
 Some companies have several branches, in such cases the company will have the "chain" type.
 This method will allow you to get a list of all branches.
-
-
 
 * Async mode support: ✅;
 * Validation disabling: ✅.
 ```python
 from ya_business_api.sync_api import SyncAPI
-from ya_business_api.companies.dataclasses.request import ChainListRequest
+from ya_business_api.companies.dataclasses.requests import ChainBranchesRequest
 
 
 api = SyncAPI.build(...)
 request = ChainListRequest(
-	tycoon_id=<tycoon_id>,		# Can be found in the Company dataclass.
-	geo_id=0,					# Optional.
+	tycoon_id=<tycoon_id>,		# Note: Some API endpoints returns companies without `tycoon_id`.
 	page=1,						# Optional
 )
-response = api.companies.get_chain_list(
-	request,		# Optional
+response = api.companies.get_chain_branches(
+	request,
 	raw=False,		# Optional
 )
 ```
-
-#### ⚠️WARNING⚠️
-Raw response of this method is HTML text.
 
 ## Service
 ### Receiving CSRF token
@@ -177,39 +185,98 @@ async with await AsyncAPI.make_session(session_id=..., session_id2=...) as sessi
 ```
 
 ## Examples
-### Getting the number of reviews asynchronously
+### Receiving all unread reviews from all companies
 ```python
 from ya_business_api.async_api import AsyncAPI
-from ya_business_api.companies.dataclasses.requests import ChainListRequest
-from ya_business_api.companies.dataclasses.chain_list import CompanyCardWithPhoto
+from ya_business_api.companies.dataclasses.requests import CompaniesRequest, ChainBranchesRequest
 from ya_business_api.reviews.dataclasses.requests import ReviewsRequest
+from ya_business_api.reviews.dataclasses.reviews import Review
+from ya_business_api.core.dataclass.base_company import BaseCompany
+
+from asyncio import run
+from os import getenv
+from typing import AsyncGenerator
+from logging import basicConfig, DEBUG
 
 
-api = await AsyncAPI.build(...)
-
-try:
+async def get_companies(api: AsyncAPI) -> AsyncGenerator[BaseCompany, None]:
+	page = 1
 	companies_response = await api.companies.get_companies()
-	open_companies = filter(lambda x: x.publishing_status != "closed", companies_response.list_companies)
 
-	for company in open_companies:
-		page = 1
-		chain_list_request = ChainListRequest(tycoon_id=company.tycoon_id, page=page)
-		chain_list_response = await api.companies.get_chain_list(chain_list_request)
+	while companies_response.list_companies:
+		for company in companies_response.list_companies:
+			if company.type == "ordinal":
+				yield company
+			elif company.type == "chain":
+				async for branch in get_ordinal_branches(api, company.tycoon_id):
+					yield branch
+			else:
+				print(f"Company {company.permanent_id} with unknown type '{company.type}' was skipped")
 
-		while len(chain_list_response.company_cards):
-			company_cards = [i for i in chain_list_response.company_cards if isinstance(i, CompanyCardWithPhoto)]
-			# Only company cards with photo contains permalink
-			# It is possible that the branch also contains branches, but this is not taken into account in this guide
+		page += 1
+		companies_request = CompaniesRequest(page=page)
+		companies_response = await api.companies.get_companies(companies_request)
 
-			for card in company_cards:
-				reviews_request = ReviewsRequest(permanent_id=card.permalink)
-				reviews_response = await api.reviews.get_reviews(reviews_request)
-				print(company.permanent_id, card.permalink, reviews_response.list.pager.total)
 
-			page += 1
-			chain_list_request = ChainListRequest(tycoon_id=company.tycoon_id, page=page)
-			chain_list_response = await api.companies.get_chain_list(chain_list_request)
+async def get_ordinal_branches(api: AsyncAPI, tycoon_id: int) -> AsyncGenerator[BaseCompany, None]:
+	page = 1
+	chain_branches_request = ChainBranchesRequest(tycoon_id=tycoon_id)
+	chain_branches_response = await api.companies.get_chain_branches(chain_branches_request)
 
-finally:
-	await api.session.close()
+	while chain_branches_response.chain_data.companies:
+		for company in chain_branches_response.chain_data.companies:
+			if company.type == "ordinal":
+				yield company
+			elif company.type == "chain":
+				raise RuntimeError(f"Unexpected chain company {company.permanent_id}")
+			else:
+				print(f"Company {company.permanent_id} with unknown type '{company.type}' was skipped")
+
+		page += 1
+		chain_branches_request = ChainBranchesRequest(tycoon_id=tycoon_id, page=page)
+		chain_branches_response = await api.companies.get_chain_branches(chain_branches_request)
+
+
+async def get_reviews(api: AsyncAPI, company_permanent_id: int) -> AsyncGenerator[Review, None]:
+	request = ReviewsRequest(permanent_id=company_permanent_id, unread=True)
+	response = await api.reviews.get_reviews(request)
+
+	while response.list.items:
+		for review in response.list.items:
+			yield review
+
+		continue_token = response.list.pager.continue_token
+		request = ReviewsRequest(permanent_id=company_permanent_id, unread=True, continue_token=continue_token)
+		response = await api.reviews.get_reviews(request)
+
+
+async def main():
+	basicConfig(
+		format='[%(levelname)s | %(asctime)s | %(name)s] %(message)s',
+		level=getenv('LOG_LEVEL', DEBUG),
+	)
+	session_id = getenv("YM_SESSION_ID")
+	session_id2 = getenv("YM_SESSION_ID2")
+
+	if not session_id:
+		raise RuntimeError("YM_SESSION_ID is required")
+
+	if not session_id2:
+		raise RuntimeError("YM_SESSION_ID2 is required")
+
+	api = await AsyncAPI.build(session_id=session_id, session_id2=session_id2)
+
+	try:
+		async for company in get_companies(api):
+			print(company.permanent_id, company.display_name)
+
+			async for review in get_reviews(api, company.permanent_id):
+				print(review.id, review.full_text)
+
+	finally:
+		await api.session.close()
+
+
+if __name__ == "__main__":
+	run(main())
 ```

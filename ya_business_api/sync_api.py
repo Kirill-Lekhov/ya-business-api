@@ -1,7 +1,7 @@
 from ya_business_api.reviews.sync_api import SyncReviewsAPI
 from ya_business_api.companies.sync_api import SyncCompaniesAPI
 from ya_business_api.service.sync_api import SyncServiceAPI
-from ya_business_api.core.constants import Cookie
+from ya_business_api.core.constants import Cookie, DEFAULT_HEADERS
 from ya_business_api.core.exceptions import CSRFTokenError
 
 from typing import Optional
@@ -39,6 +39,7 @@ class SyncAPI:
 	@staticmethod
 	def make_session(session_id, session_id2) -> Session:
 		session = Session()
+		session.headers.update(DEFAULT_HEADERS)
 		session.cookies.set(Cookie.SESSION_ID.value, session_id)
 		session.cookies.set(Cookie.SESSION_ID2.value, session_id2)
 

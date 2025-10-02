@@ -1,152 +1,14 @@
 from ya_business_api.companies.async_api import AsyncCompaniesAPI
 from ya_business_api.companies.dataclasses.companies import CompaniesResponse
-from ya_business_api.companies.dataclasses.chain_list import ChainListResponse
-from ya_business_api.companies.dataclasses.requests import CompaniesRequest, ChainListRequest
+from ya_business_api.companies.dataclasses.requests import CompaniesRequest, ChainBranchesRequest
+from ya_business_api.companies.dataclasses.chain_branches import ChainBranchesResponse
 from tests.aiohttp import Response, RequestContextManager
 
-from typing import Final
 from json import dumps
 from unittest.mock import patch
 
 import pytest
 from aiohttp.client import ClientSession
-
-
-CHAIN_LIST_CONTENT: Final[str] = """
-<div
-	class="chain-branches__list i-bem"
-	data-bem='{"chain-branches__list": {"val": [], "chainId": 1, "geoId": 1}}'
->
-	<div class="list-view list-view_ajax i-bem" data-bem='{"list-view":{}}'>
-		<div class="list-view__items">
-			<div class="chain-branches__item">
-				<div class="chain-branches__item-inner">
-					<div class="chain-branches__cell">
-						<div
-							class="company-card-with-photo i-bem"
-							data-bem='{
-								"company-card-with-photo": {
-									"type": "ordinal",
-									"companyId": 0,
-									"permalink": 0,
-									"editPhotoUrl": "/sprav/0/p/edit/photos/",
-									"url": "/sprav/0/p/edit/main",
-									"noAccess": false,
-									"name": "TITLE"
-								}
-							}'
-						>
-							<div class="company-card i-bem" data-bem='{"company-card":{}}'>
-								<div class="company-card__title">
-									<a
-										class="link link_theme_islands link__control i-bem"
-										data-bem='{"link":{}}' role="link" href="/sprav/0/p/edit/main"
-									>
-										TITLE
-									</a>
-								</div>
-								<div class="company-card__content">
-									<div class="company-card__address">ADDRESS</div>
-									<div class="company-card__rubrics">RUBRICS</div>
-									<div class="company-card__diffs">
-										<a
-											class="link link_theme_full-black company-card__diff link__control i-bem"
-											data-bem='{"link":{}}' role="link" href="/sprav/0/p/edit/reviews"
-										>
-											0 отзыва
-										</a>
-										<a
-											class="link link_theme_full-black company-card__diff link__control i-bem"
-											data-bem='{"link":{}}' role="link" href="/sprav/0/p/edit/photos"
-										>
-											Фото
-										</a>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-		<div
-			class="pager pager_data-source_tds pager_ajax i-bem"
-			data-bem='{
-				"pager": {
-					"bemjson": {
-						"totalPages": 2,
-						"currentPage": 1,
-						"params": {},
-						"url": "localhost",
-						"block": "pager",
-						"mods": {
-							"data-source": "tds",
-							"ajax": true
-						},
-						"pager": {
-							"offset": 0,
-							"limit": 20,
-							"total": 38
-						},
-						"path": "to happiness"
-					}
-				}
-			}'
-		>
-			<div class="control-group" role="group">
-				<button
-					class="button button_theme_islands button_size_m button_togglable_radio button_checked button__control i-bem"
-					data-bem='{"button":{"page":1}}'
-					role="button"
-					type="button"
-					aria-pressed="true"
-				>
-					<span class="button__text">1</span>
-				</button>
-				<a
-					class="button button_theme_islands button_size_m button_type_link button_togglable_radio button__control i-bem"
-					data-bem='{"button":{"page":2}}'
-					role="link"
-					aria-pressed="false"
-				>
-					<span class="button__text">2</span>
-				</a>
-				<a
-					class="button button_theme_islands button_size_m button_type_link button_togglable_radio button__control i-bem"
-					data-bem='{"button":{"page":3}}'
-					role="link"
-					aria-pressed="false"
-				>
-					<span class="button__text">3</span>
-				</a>
-				<a
-					class="button button_theme_islands button_size_m button_type_link button_togglable_radio button__control i-bem"
-					data-bem='{"button":{"page":4}}'
-					role="link"
-					aria-pressed="false"
-				>
-					<span class="button__text">4</span>
-				</a>
-				<a
-					class="button button_theme_islands button_size_m button_type_link button_togglable_radio button__control i-bem"
-					data-bem='{"button":{"page":5}}'
-					role="link"
-					aria-pressed="false"
-				>
-					<span class="button__text">5</span>
-				</a>
-				<a
-					class="button button_theme_islands button_size_m button_type_link button__control i-bem"
-					data-bem='{"button":{"page":2}}'
-					role="link"
-				><span class="button__text">→</span></a>
-			</div>
-		</div>
-		<span class="spin spin_theme_islands spin_size_m"></span>
-		<div class="list-view__list-paranja"></div>
-	</div>
-</div>
-"""
 
 
 @pytest.mark.asyncio
@@ -175,24 +37,37 @@ class TestAsyncCompaniesAPI:
 			assert isinstance(result, dict)
 			assert result == data
 
-	async def test_get_chain_list(self):
+	async def test_get_chain_branches(self):
 		session = ClientSession()
 		api = AsyncCompaniesAPI("TOKEN", session)
 		response = Response()
-		response.content = CHAIN_LIST_CONTENT
-		request = ChainListRequest(tycoon_id=1, geo_id=5, page=10)
+		data = {
+			"companyIds": [1, 2, 3],
+			"companyList": {
+				"pager": {
+					"offset": 0, "limit": 20, "total": 100,
+				},
+				"companies": [],
+				"chain": None,
+			},
+		}
+		response.content = dumps(data)
+		request = ChainBranchesRequest(tycoon_id=1, page=64)
 		request_context_manager = RequestContextManager(response)
 
-		with patch.object(session, 'post', return_value=request_context_manager) as session_post_method:
-			result = await api.get_chain_list(request)
-			assert isinstance(result, ChainListResponse)
-			assert result.pager.bemjson.pager.total == 38
-			assert result.chain_branches_list.chain_id == 1
-			assert len(result.company_cards) == 1
-			session_post_method.assert_called_once()
-			assert session_post_method.call_args_list[0].kwargs['params'] == {"geo_id": 5, "page": 10}
+		with patch.object(session, "get", return_value=request_context_manager) as session_get_method:
+			result = await api.get_chain_branches(request)
+			assert isinstance(result, ChainBranchesResponse)
+			assert result.company_ids == [1, 2, 3]
+			assert result.chain_data.pager.offset == 0
+			assert result.chain_data.pager.limit == 20
+			assert result.chain_data.pager.total == 100
+			assert result.chain_data.companies == []
+			assert result.chain_data.chain is None
+			session_get_method.assert_called_once()
+			assert session_get_method.call_args_list[0].kwargs["params"] == {"page": 64}
 
-		with patch.object(session, 'post', return_value=request_context_manager):
-			result = await api.get_chain_list(request, raw=True)
-			assert isinstance(result, str)
-			assert result == CHAIN_LIST_CONTENT
+		with patch.object(session, "get", return_value=request_context_manager):
+			result = await api.get_chain_branches(request, raw=True)
+			assert isinstance(result, dict)
+			assert result == data

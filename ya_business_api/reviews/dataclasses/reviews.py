@@ -59,6 +59,7 @@ class Pager(BaseModel):
 	limit: int
 	offset: int
 	total: int
+	continue_token: Optional[str] = None
 
 
 class Reviews(BaseModel):

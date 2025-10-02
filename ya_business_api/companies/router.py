@@ -6,5 +6,5 @@ class CompaniesRouter(Router):
 	def companies(self) -> str:
 		return f"{BASE_URL}/api/companies"
 
-	def chain_list(self, tycoon_id: int) -> str:
-		return f"{BASE_URL}/api/view/chain/{tycoon_id}/list/"
+	def chain_branches(self, tycoon_id: int) -> str:
+		return f"{BASE_URL}/api/chain/{tycoon_id}/branches/"

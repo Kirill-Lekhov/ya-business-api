@@ -3,4 +3,7 @@ set -e
 set -x
 
 export CI=true
+
+poetry run pip-audit-extra --local --severity HIGH --fail-level CRITICAL
+
 script/test

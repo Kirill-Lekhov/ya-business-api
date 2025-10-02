@@ -1,10 +1,8 @@
 from ya_business_api.core.mixins.asynchronous import AsyncAPIMixin
-from ya_business_api.core.constants import CSRF_TOKEN_HEADER
 from ya_business_api.companies.base_api import BaseCompaniesAPI
 from ya_business_api.companies.dataclasses.companies import CompaniesResponse
-from ya_business_api.companies.dataclasses.chain_list import ChainListResponse
-from ya_business_api.companies.dataclasses.requests import CompaniesRequest, ChainListRequest
-from ya_business_api.companies.parsers.chain_list_response import ChainListResponseParser
+from ya_business_api.companies.dataclasses.chain_branches import ChainBranchesResponse
+from ya_business_api.companies.dataclasses.requests import CompaniesRequest, ChainBranchesRequest
 
 from typing import Optional, Union, Literal, overload
 from time import monotonic
@@ -14,12 +12,8 @@ from aiohttp.client import ClientSession
 
 
 class AsyncCompaniesAPI(AsyncAPIMixin, BaseCompaniesAPI):
-	chain_list_response_parser_csl = ChainListResponseParser
-
 	def __init__(self, csrf_token: str, session: ClientSession) -> None:
 		super().__init__(session, csrf_token)
-
-		self.chain_list_response_parser = self.chain_list_response_parser_csl()
 
 	@overload
 	async def get_companies(self, request: Optional[CompaniesRequest] = None, *, raw: Literal[True]) -> dict: ...
@@ -52,28 +46,30 @@ class AsyncCompaniesAPI(AsyncAPIMixin, BaseCompaniesAPI):
 			return CompaniesResponse.model_validate_json(await response.text())
 
 	@overload
-	async def get_chain_list(self, request: ChainListRequest, *, raw: Literal[True]) -> str: ...
+	async def get_chain_branches(self, request: ChainBranchesRequest, *, raw: Literal[True]) -> dict: ...
 
 	@overload
-	async def get_chain_list(self, request: ChainListRequest, *, raw: Literal[False] = False) -> ChainListResponse: ...
+	async def get_chain_branches(
+		self,
+		request: ChainBranchesRequest,
+		*,
+		raw: Literal[False] = False,
+	) -> ChainBranchesResponse: ...
 
-	async def get_chain_list(self, request: ChainListRequest, *, raw: bool = False) -> Union[ChainListResponse, str]:
-		url = self.router.chain_list(request.tycoon_id)
-		self.set_i_cookie()
-		headers = {CSRF_TOKEN_HEADER: self.csrf_token}
+	async def get_chain_branches(
+		self,
+		request: ChainBranchesRequest,
+		*,
+		raw: bool = False,
+	) -> Union[ChainBranchesResponse, dict]:
+		url = self.router.chain_branches(request.tycoon_id)
 		time_start = monotonic()
 
-		async with self.session.post(
-			url,
-			params=request.as_query_params(),
-			headers=headers,
-			allow_redirects=False,
-		) as response:
-			log.debug(f"A:CHAIN_LIST[{response.status}] {monotonic() - time_start:.1f}s")
+		async with self.session.get(url, params=request.as_query_params(), allow_redirects=False) as response:
+			log.debug(f"A:CHAIN_BRANCHES[{response.status}] {monotonic() - time_start:.1f}s")
 			self.check_response(response)
-			content = await response.text()
 
 			if raw:
-				return content
+				return await response.json()
 
-			return self.chain_list_response_parser.parse(content)
+			return ChainBranchesResponse.model_validate_json(await response.text())
