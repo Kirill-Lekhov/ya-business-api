@@ -1,8 +1,8 @@
 name: Publish distribution to PyPI
 
 on:
-    release:
-        types: [published]
+  release:
+    types: [published]
 
 jobs:
   test:
@@ -12,7 +12,7 @@ jobs:
     name: Build distribution
     needs:
     - test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
     - uses: actions/checkout@v4
@@ -26,16 +26,16 @@ jobs:
         poetry install &&
         poetry build
     - name: Store the distribution packages
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: python-package-distributions
         path: dist/
 
   publish-to-pypi:
-    name: Publishing Python distibution to PyPI
+    name: Publishing Python distribution to PyPI
     needs:
     - build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     environment:
       name: pypi
@@ -46,9 +46,9 @@ jobs:
 
     steps:
     - name: Download all the dists
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: python-package-distributions
         path: dist/
-    - name: Publishing distibution to PyPI
+    - name: Publishing distribution to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
