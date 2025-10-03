@@ -1,5 +1,5 @@
 from ya_business_api.core.constants import INVALID_TOKEN_STATUSES, PASSPORT_URL, Cookie
-from ya_business_api.core.exceptions import CSRFTokenError, AuthenticationError
+from ya_business_api.core.exceptions import CSRFTokenError, AuthenticationError, CaptchaError
 
 from aiohttp.client import ClientSession, ClientResponse
 
@@ -19,6 +19,9 @@ class AsyncAPIMixin:
 
 		if response.status in INVALID_TOKEN_STATUSES:
 			raise CSRFTokenError()
+
+		if response.status == 429 and response.headers.get('need-captcha') == "1":
+			raise CaptchaError()
 
 		assert response.status == 200
 

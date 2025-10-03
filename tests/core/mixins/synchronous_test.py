@@ -1,5 +1,5 @@
 from ya_business_api.core.mixins.synchronous import SyncAPIMixin
-from ya_business_api.core.exceptions import AuthenticationError, CSRFTokenError
+from ya_business_api.core.exceptions import AuthenticationError, CSRFTokenError, CaptchaError
 from ya_business_api.core.constants import INVALID_TOKEN_STATUSES, Cookie
 
 import pytest
@@ -25,6 +25,11 @@ class TestSyncAPIMixin:
 			with pytest.raises(CSRFTokenError):
 				response.status_code = status
 				SyncAPIMixin.check_response(response)
+
+		with pytest.raises(CaptchaError):
+			response.status_code = 429
+			response.headers["need-captcha"] = "1"
+			SyncAPIMixin.check_response(response)
 
 		with pytest.raises(AssertionError):
 			response.status_code = 500

@@ -24,3 +24,10 @@ class ParserError(APIError):
 	Basic parser error.
 	"""
 	pass
+
+
+class CaptchaError(APIError):
+	"""
+	Captcha required.
+	"""
+	pass

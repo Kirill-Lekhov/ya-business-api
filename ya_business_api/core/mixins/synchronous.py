@@ -1,5 +1,5 @@
 from ya_business_api.core.constants import INVALID_TOKEN_STATUSES, PASSPORT_URL, Cookie
-from ya_business_api.core.exceptions import CSRFTokenError, AuthenticationError
+from ya_business_api.core.exceptions import CSRFTokenError, AuthenticationError, CaptchaError
 
 from requests.sessions import Session
 from requests.models import Response
@@ -20,6 +20,9 @@ class SyncAPIMixin:
 
 		if response.status_code in INVALID_TOKEN_STATUSES:
 			raise CSRFTokenError()
+
+		if response.status_code == 429 and response.headers.get('need-captcha') == "1":
+			raise CaptchaError()
 
 		assert response.status_code == 200
 
