@@ -15,8 +15,9 @@ class Pager(BaseModel):
 
 
 class Diffs(BaseModel):
-	reviews: int
+	reviews: Optional[int] = None
 	photos: Optional[bool] = None
+	changes: Optional[bool] = None
 
 
 class GeoCampaign(BaseModel):
