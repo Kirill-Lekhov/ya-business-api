@@ -7,7 +7,8 @@ from pydantic.fields import Field
 
 
 class Diffs(BaseModel):
-	total: int
+	total: Optional[int] = None
+	photos: Optional[bool] = None
 
 
 class Company(BaseCompany):

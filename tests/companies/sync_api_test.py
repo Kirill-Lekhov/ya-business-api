@@ -51,7 +51,7 @@ class TestSyncCompaniesAPI:
 			},
 		}
 		response._content = dumps(data).encode()
-		request = ChainBranchesRequest(tycoon_id=1, page=64)
+		request = ChainBranchesRequest(tycoon_id=1, permanent_id=2, geo_id=3, page=64)
 
 		with patch.object(session, "get", return_value=response) as session_get_method:
 			result = api.get_chain_branches(request)
@@ -63,7 +63,11 @@ class TestSyncCompaniesAPI:
 			assert result.chain_data.companies == []
 			assert result.chain_data.chain is None
 			session_get_method.assert_called_once()
-			assert session_get_method.call_args_list[0].kwargs["params"] == {"page": 64}
+			assert session_get_method.call_args_list[0].kwargs["params"] == {
+				"page": 64,
+				"chainPermalink": 2,
+				"geoId": 3,
+			}
 
 		with patch.object(session, "get", return_value=response):
 			result = api.get_chain_branches(request, raw=True)

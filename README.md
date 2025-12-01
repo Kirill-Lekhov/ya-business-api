@@ -151,6 +151,8 @@ from ya_business_api.companies.dataclasses.requests import ChainBranchesRequest
 api = SyncAPI.build(...)
 request = ChainListRequest(
 	tycoon_id=<tycoon_id>,		# Note: Some API endpoints returns companies without `tycoon_id`.
+	permanent_id=<permanent_id>,
+	geo_id=<address.geo_id>,
 	page=1,						# Optional
 )
 response = api.companies.get_chain_branches(

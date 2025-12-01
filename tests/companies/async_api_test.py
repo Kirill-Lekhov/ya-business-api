@@ -52,7 +52,7 @@ class TestAsyncCompaniesAPI:
 			},
 		}
 		response.content = dumps(data)
-		request = ChainBranchesRequest(tycoon_id=1, page=64)
+		request = ChainBranchesRequest(tycoon_id=1, permanent_id=2, geo_id=3, page=64)
 		request_context_manager = RequestContextManager(response)
 
 		with patch.object(session, "get", return_value=request_context_manager) as session_get_method:
@@ -65,7 +65,11 @@ class TestAsyncCompaniesAPI:
 			assert result.chain_data.companies == []
 			assert result.chain_data.chain is None
 			session_get_method.assert_called_once()
-			assert session_get_method.call_args_list[0].kwargs["params"] == {"page": 64}
+			assert session_get_method.call_args_list[0].kwargs["params"] == {
+				"page": 64,
+				"chainPermalink": 2,
+				"geoId": 3,
+			}
 
 		with patch.object(session, "get", return_value=request_context_manager):
 			result = await api.get_chain_branches(request, raw=True)

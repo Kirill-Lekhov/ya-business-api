@@ -1,6 +1,7 @@
 from typing import Optional
 
 from pydantic.main import BaseModel
+from pydantic.fields import Field
 
 
 class CompaniesRequest(BaseModel):
@@ -22,7 +23,11 @@ class CompaniesRequest(BaseModel):
 class ChainBranchesRequest(BaseModel):
 	tycoon_id: int
 
+	# Query params
+	permanent_id: int = Field(serialization_alias="chainPermalink")
+	geo_id: int = Field(serialization_alias="geoId")
+
 	page: Optional[int] = None
 
 	def as_query_params(self) -> dict:
-		return self.model_dump(include={"page"}, exclude_none=True)
+		return self.model_dump(include={"page", "permanent_id", "geo_id"}, exclude_none=True, by_alias=True)

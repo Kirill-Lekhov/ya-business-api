@@ -18,8 +18,8 @@ class TestCompaniesRequest:
 
 class TestChainBranchesRequest:
 	def test_as_query_params(self):
-		request = ChainBranchesRequest(tycoon_id=1)
-		assert request.as_query_params() == {}
+		request = ChainBranchesRequest(tycoon_id=1, permanent_id=2, geo_id=3)
+		assert request.as_query_params() == {"chainPermalink": 2, "geoId": 3}
 
-		request = ChainBranchesRequest(tycoon_id=1, page=10)
-		assert request.as_query_params() == {"page": 10}
+		request = ChainBranchesRequest(tycoon_id=1, permanent_id=2, geo_id=3, page=10)
+		assert request.as_query_params() == {"chainPermalink": 2, "geoId": 3, "page": 10}
