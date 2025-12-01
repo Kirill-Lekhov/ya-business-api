@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ya-business-api"
-version = "3.0.0"
+version = "4.0.0"
 description = "Yandex business API client"
 authors = ["Kirill_Lekhov <kirill.lekhov@mail.ru>"]
 license = "MIT"
