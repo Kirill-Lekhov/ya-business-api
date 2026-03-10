@@ -4,6 +4,6 @@ set -x
 
 which python3
 #which virtualenv
-which poetry
+which uv
 
-poetry install --sync
+uv sync --frozen

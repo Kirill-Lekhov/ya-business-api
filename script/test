@@ -4,14 +4,14 @@ set -x
 
 
 lint() {
-	poetry run flake8 --select=C,F,E101,E112,E502,E72,E73,E74,E9,W291,W6,EZL --exclude=.cache,playground.py,async_playground.py
+	uv run flake8 --select=C,F,E101,E112,E502,E72,E73,E74,E9,W291,W6,EZL --exclude=.cache,.venv,playground.py,async_playground.py
 }
 
 
 case $# in
 	0)
 		lint
-		poetry run pytest
+		uv run pytest
 		;;
 	1)
 		case $1 in
@@ -19,8 +19,7 @@ case $# in
 				lint
 				;;
 			*)
-				printf 'Incorrect arg: %s
-' $1 >&2
+				printf 'Incorrect arg: %s' $1 >&2
 				exit 2
 				;;
 		esac

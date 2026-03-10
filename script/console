@@ -2,4 +2,4 @@
 set -e
 set -x
 
-poetry run ipython
+uv run ipython
