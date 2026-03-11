@@ -8,6 +8,7 @@ from typing import Optional
 from logging import getLogger; log = getLogger(__name__)
 
 from aiohttp.client import ClientSession
+from aiohttp.cookiejar import CookieJar
 
 
 class AsyncAPI:
@@ -39,7 +40,7 @@ class AsyncAPI:
 
 	@staticmethod
 	async def make_session(session_id: str, session_id2: str) -> ClientSession:
-		session = ClientSession(headers=DEFAULT_HEADERS)
+		session = ClientSession(headers=DEFAULT_HEADERS, cookie_jar=CookieJar(quote_cookie=False))
 		session.cookie_jar.update_cookies({
 			Cookie.SESSION_ID.value: session_id,
 			Cookie.SESSION_ID2.value: session_id2,
