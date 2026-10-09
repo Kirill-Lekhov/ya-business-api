@@ -1,6 +1,6 @@
 [project]
 name = "ya-business-api"
-version = "4.0.1"
+version = "4.1.0"
 description = "Yandex business API client"
 license = "MIT"
 readme = "README.md"
