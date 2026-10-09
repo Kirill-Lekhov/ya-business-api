@@ -9,3 +9,7 @@ class TestCompaniesRouter:
 	def test_chain_branches(self):
 		router = CompaniesRouter()
 		assert router.chain_branches(1) == "https://yandex.ru/sprav/api/chain/1/branches/"
+
+	def test_org_permanent_id(self):
+		router = CompaniesRouter()
+		assert router.org_permanent_id(1) == "https://yandex.ru/sprav/1/p/edit/main/"

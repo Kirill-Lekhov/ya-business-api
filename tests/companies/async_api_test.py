@@ -75,3 +75,19 @@ class TestAsyncCompaniesAPI:
 			result = await api.get_chain_branches(request, raw=True)
 			assert isinstance(result, dict)
 			assert result == data
+
+	async def test_get_org_permanent_id(self):
+		session = ClientSession()
+		api = AsyncCompaniesAPI("TOKEN", session)
+		response = Response()
+		response.content = "Hello World!"
+		request_context_manager = RequestContextManager(response)
+
+		with patch("ya_business_api.companies.async_api.parse_org_permanent_id") as parse_org_permanent_id_mock:
+			with patch.object(session, "get", return_value=request_context_manager) as session_get_method:
+				parse_org_permanent_id_mock.return_value = 512
+				result = await api.get_org_permanent_id(123)
+				assert isinstance(result, int)
+				assert result == 512
+				session_get_method.assert_called_once()
+				parse_org_permanent_id_mock.assert_called_once_with("Hello World!")

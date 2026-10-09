@@ -73,3 +73,19 @@ class TestSyncCompaniesAPI:
 			result = api.get_chain_branches(request, raw=True)
 			assert isinstance(result, dict)
 			assert result == data
+
+	def test_get_org_permanent_id(self):
+		session = Session()
+		api = SyncCompaniesAPI("TOKEN", session)
+		response = Response()
+		response.status_code = 200
+		response._content = "Hello World!".encode()
+
+		with patch("ya_business_api.companies.sync_api.parse_org_permanent_id") as parse_org_permanent_id_mock:
+			with patch.object(session, "get", return_value=response) as session_get_response:
+				parse_org_permanent_id_mock.return_value = 512
+				result = api.get_org_permanent_id(123)
+				assert isinstance(result, int)
+				assert result == 512
+				session_get_response.assert_called_once()
+				parse_org_permanent_id_mock.assert_called_once_with("Hello World!")

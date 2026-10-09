@@ -21,7 +21,7 @@ def get_from_deep(node: Node, keychain: Iterable[Hashable]) -> Any:
 
 	while remaining_keys:
 		if not isinstance(node, dict):
-			raise RuntimeError("Node is not a dictionary")
+			raise TypeError("Node is not a dictionary")
 
 		key = remaining_keys.pop(0)
 		next_node = node.get(key, MissingNode)
