@@ -1,5 +1,10 @@
 # Yandex business (sprav) API client [![codecov](https://codecov.io/gh/Kirill-Lekhov/ya-business-api/graph/badge.svg?token=9Q77PG68W1)](https://codecov.io/gh/Kirill-Lekhov/ya-business-api)
 
+## Disclaimer
+> This library was created for educational purposes and is provided "as is".
+> Use it at your own risk and comply with the terms of the third-party API.
+> This project is not affiliated with or endorsed by Yandex.
+
 ## Installation
 ```sh
 # Sync only mode
