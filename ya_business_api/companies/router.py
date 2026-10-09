@@ -8,3 +8,6 @@ class CompaniesRouter(Router):
 
 	def chain_branches(self, tycoon_id: int) -> str:
 		return f"{BASE_URL}/api/chain/{tycoon_id}/branches/"
+
+	def org_permanent_id(self, permanent_id: int) -> str:
+		return f"{BASE_URL}/{permanent_id}/p/edit/main/"

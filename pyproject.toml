@@ -9,6 +9,7 @@ authors = [
 ]
 requires-python = ">=3.9"
 dependencies = [
+    "beautifulsoup4>=4.15.0",
     "pydantic>=2.12.5",
 ]
 
@@ -35,6 +36,7 @@ dev = [
     "aiohttp>=3.10.11",
     "flake8>=7.1.2",
     "flake8-zale>=0.2.1",
+    "ipython>=8.18.1",
     "pip-audit-extra>=0.1.1",
     "pytest>=8.3.5",
     "pytest-asyncio>=0.24.0",

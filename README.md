@@ -161,6 +161,21 @@ response = api.companies.get_chain_branches(
 )
 ```
 
+### Receiving organization current permanent id
+The permanent identifier of an organization may change over time.
+This method allows you to obtain a new, current identifier based on one of the old ones.
+
+* Async mode support: ✅;
+* Validation disabling: ❌.
+
+```python
+from ya_business_api.sync_api import SyncAPI
+
+
+api = SyncAPI.build(...)
+new_permanent_id = api.companies.get_org_permanent_id(1)
+```
+
 ## Service
 ### Receiving CSRF token
 * Async mode support: ✅;

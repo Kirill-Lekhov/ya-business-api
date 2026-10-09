@@ -3,6 +3,7 @@ from ya_business_api.companies.base_api import BaseCompaniesAPI
 from ya_business_api.companies.dataclasses.companies import CompaniesResponse
 from ya_business_api.companies.dataclasses.chain_branches import ChainBranchesResponse
 from ya_business_api.companies.dataclasses.requests import CompaniesRequest, ChainBranchesRequest
+from ya_business_api.companies.toolkit import parse_org_permanent_id
 
 from typing import Optional, Union, Literal, overload
 from time import monotonic
@@ -73,3 +74,13 @@ class AsyncCompaniesAPI(AsyncAPIMixin, BaseCompaniesAPI):
 				return await response.json()
 
 			return ChainBranchesResponse.model_validate_json(await response.text())
+
+	async def get_org_permanent_id(self, permanent_id: int) -> int:
+		url = self.router.org_permanent_id(permanent_id)
+		time_start = monotonic()
+
+		async with self.session.get(url) as response:
+			log.debug(f"A:ORG PERMANENT ID[{response.status}] {monotonic() - time_start:.1f}s")
+			self.check_response(response)
+
+			return parse_org_permanent_id(await response.text())

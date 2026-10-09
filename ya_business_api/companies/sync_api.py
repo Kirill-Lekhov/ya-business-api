@@ -3,6 +3,7 @@ from ya_business_api.companies.base_api import BaseCompaniesAPI
 from ya_business_api.companies.dataclasses.companies import CompaniesResponse
 from ya_business_api.companies.dataclasses.chain_branches import ChainBranchesResponse
 from ya_business_api.companies.dataclasses.requests import CompaniesRequest, ChainBranchesRequest
+from ya_business_api.companies.toolkit import parse_org_permanent_id
 
 from typing import Optional, Union, Literal, overload
 
@@ -65,3 +66,10 @@ class SyncCompaniesAPI(SyncAPIMixin, BaseCompaniesAPI):
 			return response.json()
 
 		return ChainBranchesResponse.model_validate_json(response.text)
+
+	def get_org_permanent_id(self, permanent_id: int) -> int:
+		url = self.router.org_permanent_id(permanent_id)
+		response = self.session.get(url)
+		self.check_response(response)
+
+		return parse_org_permanent_id(response.text)
