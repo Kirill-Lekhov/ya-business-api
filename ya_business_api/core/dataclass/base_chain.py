@@ -13,7 +13,7 @@ class BaseChain(BaseModel):
 	id: int
 	permanent_id: int
 	phones: List[BasePhone]
-	urls: List[BaseURL]
+	urls: List[BaseURL] = Field(default_factory=list)
 	display_name: str = Field(validation_alias="displayName")
 	names: List[BaseName]
 	rubrics: List[BaseRubric]
